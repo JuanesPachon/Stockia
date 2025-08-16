@@ -17,7 +17,7 @@ const userShema = new mongoose.Schema<IUser>({
     },
     businessName: {
         type: String,
-        required: true,
+        required: false,
     },
     createdAt: {
         type: Date,
@@ -25,9 +25,6 @@ const userShema = new mongoose.Schema<IUser>({
         required: true,
     },
 });
-
-// Index for optimizing queries
-userShema.index({ email: 1 }, { unique: true });
 
 const User = mongoose.model('User', userShema);
 

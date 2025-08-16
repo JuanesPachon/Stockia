@@ -3,6 +3,7 @@ import "dotenv/config";
 import cors from "cors";
 import helmet from "helmet";
 import path from "path";
+import "./config/mongoose.config.js";
 import userRoutes from "./routes/userRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 
