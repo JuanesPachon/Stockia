@@ -10,9 +10,6 @@ const registerController = async (req: Request, res: Response) => {
 
         const response = await userService.createUser(user);
 
-        console.log(response);
-        
-
         if(response.success) {
             return res.status(201).json({
                 success: true,
