@@ -2,13 +2,11 @@ import mongoose from "mongoose";
 import { ICategory } from "../interfaces/models.interface.js";
 
 const categorySchema = new mongoose.Schema<ICategory>({
-    userId: [
-        {
-            type: mongoose.Types.ObjectId,
-            ref: "User",
-            required: true,
-        },
-    ],
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
     name: {
         type: String,
         required: true,
@@ -25,7 +23,7 @@ const categorySchema = new mongoose.Schema<ICategory>({
     deletedAt: {
         type: Date,
         default: null,
-        required: true,
+        required: false,
     },
 });
 

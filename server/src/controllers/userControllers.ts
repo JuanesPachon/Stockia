@@ -9,17 +9,11 @@ const registerController = async (req: Request, res: Response) => {
         const response = await userService.createUser(user);
 
         if (response.success) {
-            return res.status(201).json({
-                success: true,
-                message: response.message,
-            });
+            return res.status(201).json(response);
         } else if (response.error === 'duplicate') {
-            return res.status(409).json({
-                success: false,
-                message: response.message,
-            });
+            return errorHandler.handleDuplicateError(res, response.message);
         } else {
-            return errorHandler.handleServerError(res);
+            return res.status(500).json(response);
         }
     } catch (error) {
         return errorHandler.handleServerError(res);
@@ -41,14 +35,11 @@ const loginController = async (req: Request, res: Response) => {
                     maxAge: 14 * 24 * 60 * 60 * 1000,
                 })
                 .status(200)
-                .json({
-                    success: true,
-                    message: response.message,
-                });
+                .json(response);
         } else if (response.error === 'invalid_credentials') {
             return errorHandler.handleInvalidCredentialsError(res);
         } else {
-            return errorHandler.handleServerError(res);
+            return res.status(500).json(response);
         }
     } catch (error) {
         return errorHandler.handleServerError(res);

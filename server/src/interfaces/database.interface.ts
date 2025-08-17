@@ -1,6 +1,6 @@
 export interface IRegisterResult {
     success: boolean;
-    error?: 'duplicate' | 'server' | 'validation';
+    error?: 'duplicate' | 'server';
     message?: string;
 }
 
@@ -9,4 +9,11 @@ export interface ILoginResult {
     error?: 'invalid_credentials' | 'server';
     message?: string;
     token?: string;
+}
+
+export interface ICreateResult {
+    success: boolean;
+    error?: 'not_found' | 'duplicate' | 'server';
+    message?: string;
+    data?: object;
 }

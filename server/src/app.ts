@@ -3,6 +3,7 @@ import "dotenv/config";
 import cors from "cors";
 import helmet from "helmet";
 import path from "path";
+import cookieParser from "cookie-parser";
 import "./config/mongoose.config.js";
 import userRoutes from "./routes/userRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -20,6 +21,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.json());
+app.use(cookieParser());
 app.disable("x-powered-by");
 app.use(express.static(path.join(path.dirname(import.meta.filename), "../../public")));
 

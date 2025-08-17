@@ -31,7 +31,7 @@ const createUser = async (user: IUser): Promise<IRegisterResult> => {
         return {
             success: false,
             error: 'server',
-            message: 'Internal server error',
+            message: 'Error occurred while registering user',
         };
     }
 };
