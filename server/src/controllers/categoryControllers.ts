@@ -23,7 +23,6 @@ const createCategoryController = async (req: Request, res: Response) => {
             return res.status(500).json(response);
         }
     } catch (error) {
-        console.error('Error in createCategoryController:', error);
         return errorHandler.handleServerError(res);
     }
 };
@@ -54,11 +53,31 @@ const updateCategoryController = async (req: Request, res: Response) => {
             return res.status(500).json(response);
         }
     } catch (error) {
-        console.error('Error in updateCategoryController:', error);
         return errorHandler.handleServerError(res);
     }
 };
 
-const deleteCategoryController = async (req: Request, res: Response) => {};
+const deleteCategoryController = async (req: Request, res: Response) => {
+    try {
+        const categoryId = req.params.id;
+        const userId = req.user?.sub;
+
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        const response = await categoryService.deleteCategory(categoryId, userId);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else if (response.error === 'not_found') {
+            return errorHandler.handleNotFoundError(res, 'Category not found');
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+};
 
 export { createCategoryController, getCategoriesController, getCategoryController, updateCategoryController, deleteCategoryController };

@@ -35,7 +35,10 @@ const loginController = async (req: Request, res: Response) => {
                     maxAge: 14 * 24 * 60 * 60 * 1000,
                 })
                 .status(200)
-                .json(response);
+                .json({
+                    success: true,
+                    message: response.message,
+                });
         } else if (response.error === 'invalid_credentials') {
             return errorHandler.handleInvalidCredentialsError(res);
         } else {

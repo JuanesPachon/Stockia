@@ -1,4 +1,4 @@
-import { ICreateAndEditResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult, IDeleteResult } from '../interfaces/database.interface.js';
 import { ICategory } from '../interfaces/models.interface.js';
 import Category from '../models/categoryModel.js';
 import User from '../models/userModel.js';
@@ -124,7 +124,61 @@ const updateCategory = async (categoryId: string, categoryData: ICategory, userI
     }
 };
 
+const deleteCategory = async (categoryId: string, userId: string): Promise<IDeleteResult> => {
+    try {
+        if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(userId)) {
+            return {
+                success: false,
+                error: 'server',
+                message: 'Invalid category or user ID format',
+            };
+        }
+
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+
+        const existingUser = await User.exists({ _id: userObjectId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+            };
+        }
+
+        const deletedCategory = await Category.findOneAndUpdate(
+            {
+                _id: categoryId,
+                userId: userObjectId,
+            },
+            {
+                deletedAt: new Date(),
+            }
+        );
+
+        if (!deletedCategory) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Category not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Category deleted successfully',
+        };
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while deleting the category',
+        };
+    }
+};
+
 export default {
     createCategory,
     updateCategory,
+    deleteCategory,
 };

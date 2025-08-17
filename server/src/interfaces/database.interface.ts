@@ -17,3 +17,9 @@ export interface ICreateAndEditResult {
     message?: string;
     data?: object;
 }
+
+export interface IDeleteResult {
+    success: boolean;
+    error?: 'not_found' | 'server';
+    message?: string;
+}
