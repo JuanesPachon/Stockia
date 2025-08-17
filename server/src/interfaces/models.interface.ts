@@ -1,9 +1,8 @@
 import { Types } from "mongoose";
+import { Auth } from "./auth.interface.js";
 
-export interface IUser {
+export interface IUser extends Auth {
     name: string;
-    email: string;
-    password: string;
     businessName: string;
     createdAt: Date;
 }

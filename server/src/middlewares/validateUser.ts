@@ -31,3 +31,13 @@ export const userValidations = [
         .matches(/[!@#$%^&*(),.?":{}|<>]/)
         .withMessage('Password must contain at least one special character'),
 ];
+
+export const loginValidations = [
+    check('email')
+        .notEmpty()
+        .withMessage('Email is required')
+        .isEmail()
+        .withMessage('Please enter a valid email address'),
+
+    check('password').notEmpty().withMessage('Password is required'),
+];
