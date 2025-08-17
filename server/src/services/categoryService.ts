@@ -1,10 +1,10 @@
-import { ICreateResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult } from '../interfaces/database.interface.js';
 import { ICategory } from '../interfaces/models.interface.js';
 import Category from '../models/categoryModel.js';
 import User from '../models/userModel.js';
 import mongoose from 'mongoose';
 
-const createCategory = async (categoryData: ICategory, userId: string): Promise<ICreateResult> => {
+const createCategory = async (categoryData: ICategory, userId: string): Promise<ICreateAndEditResult> => {
     try {
         if (!mongoose.isValidObjectId(userId)) {
             return {
@@ -15,7 +15,7 @@ const createCategory = async (categoryData: ICategory, userId: string): Promise<
         }
 
         const userObjectId = new mongoose.Types.ObjectId(userId);
-        
+
         const existingUser = await User.exists({ _id: userObjectId });
 
         if (!existingUser) {
@@ -25,10 +25,10 @@ const createCategory = async (categoryData: ICategory, userId: string): Promise<
             };
         }
 
-        const existingCategory = await Category.exists({ 
-            name: categoryData.name
+        const existingCategory = await Category.exists({
+            name: categoryData.name,
         });
-        
+
         if (existingCategory) {
             return {
                 success: false,
@@ -50,7 +50,7 @@ const createCategory = async (categoryData: ICategory, userId: string): Promise<
             data: {
                 name: newCategory.name,
                 description: newCategory.description,
-            }
+            },
         };
     } catch (error) {
         console.error('Error creating category:', error);
@@ -62,6 +62,69 @@ const createCategory = async (categoryData: ICategory, userId: string): Promise<
     }
 };
 
+const updateCategory = async (categoryId: string, categoryData: ICategory, userId: string): Promise<ICreateAndEditResult> => {
+    try {
+        if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(userId)) {
+            return {
+                success: false,
+                error: 'server',
+                message: 'Invalid category or user ID format',
+            };
+        }
+
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+
+        const existingUser = await User.exists({ _id: userObjectId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                message: 'not_found',
+            };
+        }
+
+        const updatedCategory = await Category.findOneAndUpdate(
+            { _id: categoryId, userId: userObjectId },
+            categoryData,
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedCategory) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Category not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Category updated successfully',
+            data: {
+                name: updatedCategory.name,
+                description: updatedCategory.description,
+            },
+        };
+    } catch (error: any) {
+        console.error('Error updating category:', error);
+
+        if (error.code === 11000 && error.codeName === 'DuplicateKey') {
+            return {
+                success: false,
+                error: 'duplicate',
+                message: 'Category with this name already exists for this user',
+            };
+        }
+
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while updating the category',
+        };
+    }
+};
+
 export default {
-    createCategory
+    createCategory,
+    updateCategory,
 };

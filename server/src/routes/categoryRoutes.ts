@@ -11,7 +11,7 @@ router.use(verifyToken);
 router.get("/categories", getCategoriesController);
 router.get("/categories/:id", getCategoryController);
 router.post("/categories", categoryValidations, errorsIsEmpty ,createCategoryController);
-router.put("/categories/:id", updateCategoryController);
+router.patch("/categories/:id", categoryValidations, errorsIsEmpty, updateCategoryController);
 router.delete("/categories/:id", deleteCategoryController);
 
 export default router;

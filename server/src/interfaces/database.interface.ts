@@ -11,7 +11,7 @@ export interface ILoginResult {
     token?: string;
 }
 
-export interface ICreateResult {
+export interface ICreateAndEditResult {
     success: boolean;
     error?: 'not_found' | 'duplicate' | 'server';
     message?: string;
