@@ -6,13 +6,6 @@ import mongoose from 'mongoose';
 
 const getCategories = async (userId: string, order: string = 'desc'): Promise<IGetResult> => {
     try {
-        if (!mongoose.isValidObjectId(userId)) {
-            return {
-                success: false,
-                error: 'server',
-                message: 'Invalid user',
-            };
-        }
 
         const existingUser = await User.exists({ _id: userId });
 
@@ -47,13 +40,6 @@ const getCategories = async (userId: string, order: string = 'desc'): Promise<IG
 
 const getCategoryById = async (categoryId: string, userId: string): Promise<IGetResult> => {
     try {
-        if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(userId)) {
-            return {
-                success: false,
-                error: 'server',
-                message: 'Invalid category or user',
-            };
-        }
 
         const existingUser = await User.exists({ _id: userId });
 
@@ -95,13 +81,6 @@ const getCategoryById = async (categoryId: string, userId: string): Promise<IGet
 
 const createCategory = async (categoryData: ICategory, userId: string): Promise<ICreateAndEditResult> => {
     try {
-        if (!mongoose.isValidObjectId(userId)) {
-            return {
-                success: false,
-                error: 'server',
-                message: 'Invalid user',
-            };
-        }
 
         const existingUser = await User.exists({ _id: userId });
 
@@ -151,13 +130,6 @@ const createCategory = async (categoryData: ICategory, userId: string): Promise<
 
 const updateCategory = async (categoryId: string, categoryData: ICategory, userId: string): Promise<ICreateAndEditResult> => {
     try {
-        if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(userId)) {
-            return {
-                success: false,
-                error: 'server',
-                message: 'Invalid category or user',
-            };
-        }
 
         const existingUser = await User.exists({ _id: userId });
 
@@ -211,13 +183,6 @@ const updateCategory = async (categoryId: string, categoryData: ICategory, userI
 
 const deleteCategory = async (categoryId: string, userId: string): Promise<IDeleteResult> => {
     try {
-        if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(userId)) {
-            return {
-                success: false,
-                error: 'server',
-                message: 'Invalid category or user',
-            };
-        }
 
         const existingUser = await User.exists({ _id: userId });
 

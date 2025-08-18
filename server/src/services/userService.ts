@@ -1,9 +1,10 @@
 import bcrypt from 'bcryptjs';
 import { IUser } from '../interfaces/models.interface.js';
-import { ILoginResult, IRegisterResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult, ILoginResult, IRegisterResult } from '../interfaces/database.interface.js';
 import User from '../models/userModel.js';
 import { Auth } from '../interfaces/auth.interface.js';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 
 const createUser = async (user: IUser): Promise<IRegisterResult> => {
     try {
@@ -71,7 +72,36 @@ const loginUser = async (loginRequest: Auth): Promise<ILoginResult> => {
     }
 };
 
+const editUser = async (id: string, userData: Partial<IUser>): Promise<ICreateAndEditResult> => {
+    try {
+
+        const user = await User.findById(id);
+        if (!user) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'User not found',
+            };
+        }
+        if (userData.password) {
+            userData.password = await bcrypt.hash(userData.password, 10);
+        }
+        await User.findByIdAndUpdate(id, userData);
+        return {
+            success: true,
+            message: 'User updated successfully',
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: 'server',
+            message: 'Error occurred while updating user',
+        };
+    }
+};
+
 export default {
     createUser,
     loginUser,
+    editUser,
 };

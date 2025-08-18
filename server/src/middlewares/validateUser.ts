@@ -3,11 +3,11 @@ import { check } from 'express-validator';
 export const userValidations = [
     check('name')
         .notEmpty()
-        .withMessage('First name is required')
+        .withMessage('Name is required')
         .isLength({ min: 2, max: 30 })
-        .withMessage('First name must be between 2 and 30 characters')
+        .withMessage('Name must be between 2 and 30 characters')
         .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/)
-        .withMessage('First name must contain only letters'),
+        .withMessage('Name must contain only letters'),
 
     check('email')
         .notEmpty()
@@ -40,4 +40,18 @@ export const loginValidations = [
         .withMessage('Please enter a valid email address'),
 
     check('password').notEmpty().withMessage('Password is required'),
+];
+
+export const editUserValidations = [
+    check('name')
+        .notEmpty()
+        .withMessage('First name is required')
+        .isLength({ min: 2, max: 30 })
+        .withMessage('First name must be between 2 and 30 characters')
+        .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/)
+        .withMessage('First name must contain only letters'),
+    check('businessName')
+        .optional()
+        .isLength({ max: 100 })
+        .withMessage('Business name must not exceed 100 characters'),
 ];

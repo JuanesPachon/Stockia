@@ -51,4 +51,34 @@ const loginController = async (req: Request, res: Response) => {
 
 const logoutController = async (req: Request, res: Response) => {};
 
-export { registerController, loginController, logoutController };
+const editUserController = async (req: Request, res: Response) => {
+
+    try {
+        const userId = req.user?.sub;
+        const userData = req.body;
+
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        const response = await userService.editUser(userId, userData);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else if (response.error === 'not_found') {
+            return errorHandler.handleNotFoundError(res, 'User not found');
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+
+};
+
+export { 
+    registerController, 
+    loginController,
+    logoutController,
+    editUserController
+};
