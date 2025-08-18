@@ -1,8 +1,97 @@
-import { ICreateAndEditResult, IDeleteResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult, IDeleteResult, IGetResult } from '../interfaces/database.interface.js';
 import { ICategory } from '../interfaces/models.interface.js';
 import Category from '../models/categoryModel.js';
 import User from '../models/userModel.js';
 import mongoose from 'mongoose';
+
+const getCategories = async (userId: string, order: string = 'desc'): Promise<IGetResult> => {
+    try {
+        if (!mongoose.isValidObjectId(userId)) {
+            return {
+                success: false,
+                error: 'server',
+                message: 'Invalid user',
+            };
+        }
+
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'User not found',
+            };
+        }
+
+        const sortOrder = order === 'asc' ? 1 : -1;
+        const sortObject: any = {};
+        sortObject['createdAt'] = sortOrder;
+
+        const categories = await Category.find({ userId: userId, deletedAt: null }).sort(sortObject);
+
+        return {
+            success: true,
+            message: 'Categories retrieved successfully',
+            data: categories,
+        };
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the categories',
+        };
+    }
+};
+
+const getCategoryById = async (categoryId: string, userId: string): Promise<IGetResult> => {
+    try {
+        if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(userId)) {
+            return {
+                success: false,
+                error: 'server',
+                message: 'Invalid category or user',
+            };
+        }
+
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+            };
+        }
+
+        const category = await Category.findOne({
+            _id: categoryId,
+            userId: userId,
+            deleteAt: null,
+        });
+
+        if (!category) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Category not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Category retrieved successfully',
+            data: category,
+        };
+    } catch (error) {
+        console.error('Error fetching category:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the category',
+        };
+    }
+};
 
 const createCategory = async (categoryData: ICategory, userId: string): Promise<ICreateAndEditResult> => {
     try {
@@ -10,13 +99,11 @@ const createCategory = async (categoryData: ICategory, userId: string): Promise<
             return {
                 success: false,
                 error: 'server',
-                message: 'Invalid user ID format',
+                message: 'Invalid user',
             };
         }
 
-        const userObjectId = new mongoose.Types.ObjectId(userId);
-
-        const existingUser = await User.exists({ _id: userObjectId });
+        const existingUser = await User.exists({ _id: userId });
 
         if (!existingUser) {
             return {
@@ -39,7 +126,7 @@ const createCategory = async (categoryData: ICategory, userId: string): Promise<
 
         const newCategory = {
             ...categoryData,
-            userId: userObjectId,
+            userId: userId,
         };
 
         await Category.create(newCategory);
@@ -68,13 +155,11 @@ const updateCategory = async (categoryId: string, categoryData: ICategory, userI
             return {
                 success: false,
                 error: 'server',
-                message: 'Invalid category or user ID format',
+                message: 'Invalid category or user',
             };
         }
 
-        const userObjectId = new mongoose.Types.ObjectId(userId);
-
-        const existingUser = await User.exists({ _id: userObjectId });
+        const existingUser = await User.exists({ _id: userId });
 
         if (!existingUser) {
             return {
@@ -84,7 +169,7 @@ const updateCategory = async (categoryId: string, categoryData: ICategory, userI
         }
 
         const updatedCategory = await Category.findOneAndUpdate(
-            { _id: categoryId, userId: userObjectId },
+            { _id: categoryId, userId: userId },
             categoryData,
             { new: true } // Return the updated document
         );
@@ -130,13 +215,11 @@ const deleteCategory = async (categoryId: string, userId: string): Promise<IDele
             return {
                 success: false,
                 error: 'server',
-                message: 'Invalid category or user ID format',
+                message: 'Invalid category or user',
             };
         }
 
-        const userObjectId = new mongoose.Types.ObjectId(userId);
-
-        const existingUser = await User.exists({ _id: userObjectId });
+        const existingUser = await User.exists({ _id: userId });
 
         if (!existingUser) {
             return {
@@ -148,7 +231,7 @@ const deleteCategory = async (categoryId: string, userId: string): Promise<IDele
         const deletedCategory = await Category.findOneAndUpdate(
             {
                 _id: categoryId,
-                userId: userObjectId,
+                userId: userId,
             },
             {
                 deletedAt: new Date(),
@@ -178,6 +261,8 @@ const deleteCategory = async (categoryId: string, userId: string): Promise<IDele
 };
 
 export default {
+    getCategories,
+    getCategoryById,
     createCategory,
     updateCategory,
     deleteCategory,

@@ -11,6 +11,12 @@ export interface ILoginResult {
     token?: string;
 }
 
+export interface IGetResult {
+    success: boolean;
+    error?: 'not_found' | 'server';
+    message?: string;
+    data?: object | object[];
+}
 export interface ICreateAndEditResult {
     success: boolean;
     error?: 'not_found' | 'duplicate' | 'server';

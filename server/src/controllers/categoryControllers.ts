@@ -27,9 +27,52 @@ const createCategoryController = async (req: Request, res: Response) => {
     }
 };
 
-const getCategoriesController = async (req: Request, res: Response) => {};
+const getCategoriesController = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.sub;
+        const orderQuery = req.query.order;
+        
+        const order = typeof orderQuery === 'string' ? orderQuery : 'desc';
 
-const getCategoryController = async (req: Request, res: Response) => {};
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        const response = await categoryService.getCategories(userId, order);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+
+};
+
+const getCategoryController = async (req: Request, res: Response) => {
+    try {
+        const categoryId = req.params.id;
+        const userId = req.user?.sub;
+
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        const response = await categoryService.getCategoryById(categoryId, userId);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else if (response.error === 'not_found') {
+            return errorHandler.handleNotFoundError(res, 'Category not found');
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+};
 
 const updateCategoryController = async (req: Request, res: Response) => {
     try {
