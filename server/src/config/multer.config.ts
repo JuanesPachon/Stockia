@@ -12,7 +12,7 @@ const fileFilter = (_req: Request, file: Express.Multer.File, cb: FileFilterCall
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    const error = new Error("No es un archivo de imagen") as any;
+    const error = new Error("File is not in a valid format") as any;
     cb(error, false);
   }
 };

@@ -1,5 +1,5 @@
-import { Types } from "mongoose";
-import { Auth } from "./auth.interface.js";
+import { Types } from 'mongoose';
+import { Auth } from './auth.interface.js';
 
 export interface IUser extends Auth {
     name: string;
@@ -13,4 +13,14 @@ export interface ICategory {
     description: string;
     createdAt: Date;
     deletedAt: Date | null;
+}
+
+export interface IProduct {
+    userId: Types.ObjectId;
+    name: string;
+    categoryId: Types.ObjectId | null;
+    providerId?: Types.ObjectId | null;
+    stock: number;
+    price: number;
+    imageUrl?: string | null;
 }

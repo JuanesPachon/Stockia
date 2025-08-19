@@ -4,7 +4,6 @@ import { ICreateAndEditResult, ILoginResult, IRegisterResult } from '../interfac
 import User from '../models/userModel.js';
 import { Auth } from '../interfaces/auth.interface.js';
 import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
 
 const createUser = async (user: IUser): Promise<IRegisterResult> => {
     try {

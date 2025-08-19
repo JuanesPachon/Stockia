@@ -2,7 +2,6 @@ import { ICreateAndEditResult, IDeleteResult, IGetResult } from '../interfaces/d
 import { ICategory } from '../interfaces/models.interface.js';
 import Category from '../models/categoryModel.js';
 import User from '../models/userModel.js';
-import mongoose from 'mongoose';
 
 const getCategories = async (userId: string, order: string = 'desc'): Promise<IGetResult> => {
     try {

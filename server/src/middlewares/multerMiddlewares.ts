@@ -17,7 +17,7 @@ const createUploadResult = (
 };
 
 const handleMulterError = (error: any, _req: Request, res: Response, next: NextFunction): void => {
-  if (error instanceof multer.MulterError || error.message === "No es un archivo de imagen") {
+  if (error instanceof multer.MulterError || error.message === "File is not in a valid format") {
     const result = createUploadResult(
       false,
       'invalid_file',
@@ -40,7 +40,7 @@ const uploadToSupabase = async (req: Request, res: Response, next: NextFunction)
     const fileBase64 = decode(buffer.toString("base64"));
 
     const { error } = await supabaseClient.storage
-      .from("stockia-files")
+      .from("stockia_files")
       .upload(filePath, fileBase64, {
         contentType: "image/" + path.extname(originalname).substring(1),
       });

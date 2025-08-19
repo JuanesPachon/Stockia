@@ -49,8 +49,6 @@ const loginController = async (req: Request, res: Response) => {
     }
 };
 
-const logoutController = async (req: Request, res: Response) => {};
-
 const editUserController = async (req: Request, res: Response) => {
 
     try {
@@ -79,6 +77,5 @@ const editUserController = async (req: Request, res: Response) => {
 export { 
     registerController, 
     loginController,
-    logoutController,
     editUserController
 };

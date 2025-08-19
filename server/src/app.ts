@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import "./config/mongoose.config.js";
 import userRoutes from "./routes/userRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 
 const PORT = process.env.PORT || 3002;
 
@@ -27,6 +28,7 @@ app.use(express.static(path.join(path.dirname(import.meta.filename), './public')
 
 app.use("/api/v1/", userRoutes);
 app.use("/api/v1/", categoryRoutes);
+app.use("/api/v1/", productRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
