@@ -41,6 +41,7 @@ const createProduct = async (productData: IProduct, userId: string): Promise<ICr
             data: {
                 name: newProduct.name,
                 price: newProduct.price,
+                stock: newProduct.stock,
             },
         };
     } catch (error) {
@@ -54,6 +55,63 @@ const createProduct = async (productData: IProduct, userId: string): Promise<ICr
 
 }
 
+const updateProduct = async (productId: string, productData: IProduct, userId: string): Promise<ICreateAndEditResult> => {
+
+    try {
+
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                message: 'not_found',
+            };
+        }
+
+        const updatedProduct = await Product.findOneAndUpdate(
+            { _id: productId, userId: userId },
+            productData,
+            { new: true }
+        );
+
+        if (!updatedProduct) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Product not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Product updated successfully',
+            data: {
+                name: updatedProduct.name,
+                price: updatedProduct.price,
+                stock: updatedProduct.stock,
+            },
+        };
+    } catch (error: any) {
+        console.error('Error updating product:', error);
+
+        if (error.code === 11000 && error.codeName === 'DuplicateKey') {
+            return {
+                success: false,
+                error: 'duplicate',
+                message: 'Product with this name already exists for this user',
+            };
+        }
+
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while updating the product',
+        };
+    }
+
+}
+
 export default {
     createProduct,
+    updateProduct,
 }
