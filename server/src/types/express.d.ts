@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { IMulterFile } from "../interfaces/multer.interface";
 
 declare global {
   namespace Express {
@@ -7,6 +8,7 @@ declare global {
         sub: string;
         iat: number;
       };
+      file?: IMulterFile;
     }
   }
 }

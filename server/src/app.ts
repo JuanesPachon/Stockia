@@ -23,7 +23,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 app.disable("x-powered-by");
-app.use(express.static(path.join(path.dirname(import.meta.filename), "../../public")));
+app.use(express.static(path.join(path.dirname(import.meta.filename), './public')));
 
 app.use("/api/v1/", userRoutes);
 app.use("/api/v1/", categoryRoutes);
