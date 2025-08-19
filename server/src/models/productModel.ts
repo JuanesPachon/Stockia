@@ -38,6 +38,11 @@ const productSchema = new mongoose.Schema<IProduct>({
         required: false,
         default: null,
     },
+    deletedAt: {
+        type: Date,
+        default: null,
+        required: false,
+    },
 });
 
 // Index for optimizing queries

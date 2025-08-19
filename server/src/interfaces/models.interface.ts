@@ -23,4 +23,6 @@ export interface IProduct {
     stock: number;
     price: number;
     imageUrl?: string | null;
+    createdAt: Date;
+    deletedAt: Date | null;
 }

@@ -1,4 +1,4 @@
-import { ICreateAndEditResult } from "../interfaces/database.interface.js";
+import { ICreateAndEditResult, IDeleteResult } from "../interfaces/database.interface.js";
 import { IProduct } from "../interfaces/models.interface.js";
 import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
@@ -111,7 +111,52 @@ const updateProduct = async (productId: string, productData: IProduct, userId: s
 
 }
 
+const deleteProduct = async (productId: string, userId: string): Promise<IDeleteResult> => {
+    try {
+
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+            };
+        }
+
+        const deletedProduct = await Product.findOneAndUpdate(
+            {
+                _id: productId,
+                userId: userId,
+            },
+            {
+                deletedAt: new Date(),
+            }
+        );
+
+        if (!deletedProduct) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Product not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Product deleted successfully',
+        };
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while deleting the product',
+        };
+    }
+};
+
 export default {
     createProduct,
     updateProduct,
+    deleteProduct,
 }
