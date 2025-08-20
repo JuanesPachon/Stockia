@@ -92,6 +92,8 @@ const createCategory = async (categoryData: ICategory, userId: string): Promise<
 
         const existingCategory = await Category.exists({
             name: categoryData.name,
+            userId: userId,
+            deletedAt: null,
         });
 
         if (existingCategory) {

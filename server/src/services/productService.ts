@@ -18,6 +18,8 @@ const createProduct = async (productData: IProduct, userId: string): Promise<ICr
 
         const existingProduct = await Product.exists({
             name: productData.name,
+            userId: userId,
+            deletedAt: null,
         });
 
         if (existingProduct) {
