@@ -1,5 +1,4 @@
 import { check } from 'express-validator';
-import mongoose from 'mongoose';
 
 export const productValidations = [
     check('name')
@@ -12,21 +11,13 @@ export const productValidations = [
 
     check('categoryId')
         .optional({ nullable: true })
-        .custom((value) => {
-            if (value && !mongoose.Types.ObjectId.isValid(value)) {
-                throw new Error('Invalid category');
-            }
-            return true;
-        }),
+        .isMongoId()
+        .withMessage('Category ID must be a valid ID'),
 
     check('providerId')
         .optional({ nullable: true })
-        .custom((value) => {
-            if (value && !mongoose.Types.ObjectId.isValid(value)) {
-                throw new Error('Invalid provider');
-            }
-            return true;
-        }),
+        .isMongoId()
+        .withMessage('Provider ID must be a valid ID'),
 
     check('stock')
         .notEmpty()
@@ -62,21 +53,13 @@ export const editProductValidations = [
 
     check('categoryId')
         .optional({ nullable: true })
-        .custom((value) => {
-            if (value && !mongoose.Types.ObjectId.isValid(value)) {
-                throw new Error('Invalid category');
-            }
-            return true;
-        }),
+        .isMongoId()
+        .withMessage('Category ID must be a valid ID'),
 
     check('providerId')
         .optional({ nullable: true })
-        .custom((value) => {
-            if (value && !mongoose.Types.ObjectId.isValid(value)) {
-                throw new Error('Invalid provider');
-            }
-            return true;
-        }),
+        .isMongoId()
+        .withMessage('Provider ID must be a valid ID'),
 
     check('stock')
         .optional()

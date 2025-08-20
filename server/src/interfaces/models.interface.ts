@@ -26,3 +26,14 @@ export interface IProduct {
     createdAt: Date;
     deletedAt: Date | null;
 }
+
+export interface IProvider {
+    userId: Types.ObjectId;
+    name: string;
+    categoryId: Types.ObjectId | null;
+    contact: string;
+    description: string;
+    status: boolean;
+    createdAt: Date;
+    deletedAt: Date | null;
+}
