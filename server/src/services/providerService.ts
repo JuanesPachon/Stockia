@@ -1,8 +1,101 @@
-import { ICreateAndEditResult, IDeleteResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult, IDeleteResult, IGetResult } from '../interfaces/database.interface.js';
 import { IProvider } from '../interfaces/models.interface.js';
 import Provider from '../models/providerModel.js';
 import User from '../models/userModel.js';
 import Category from '../models/categoryModel.js';
+
+const getProviders = async (userId: string, order: string = 'desc', categoryId?: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'User not found',
+            };
+        }
+
+        const sortOrder = order === 'asc' ? 1 : -1;
+        const sortObject: any = {};
+        sortObject['createdAt'] = sortOrder;
+
+        const filters: any = { 
+            userId: userId, 
+            deletedAt: null 
+        };
+
+        if (categoryId) {
+            filters.categoryId = categoryId;
+        }
+
+        const providers = await Provider.find(filters)
+            .sort(sortObject)
+            .populate({
+                path: 'categoryId',
+                select: 'name description',
+                match: { _id: { $ne: null } }
+            });
+
+        return {
+            success: true,
+            message: 'Providers retrieved successfully',
+            data: providers,
+        };
+    } catch (error) {
+        console.error('Error fetching providers:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the providers',
+        };
+    }
+};
+
+const getProviderById = async (providerId: string, userId: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+            };
+        }
+
+        const provider = await Provider.findOne({
+            _id: providerId,
+            userId: userId,
+            deletedAt: null,
+        })
+        .populate({
+            path: 'categoryId',
+            select: 'name description',
+            match: { _id: { $ne: null } }
+        });
+
+        if (!provider) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Provider not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Provider retrieved successfully',
+            data: provider,
+        };
+    } catch (error) {
+        console.error('Error fetching provider:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the provider',
+        };
+    }
+};
 
 const createProvider = async (providerData: IProvider, userId: string): Promise<ICreateAndEditResult> => {
     try {
@@ -158,7 +251,6 @@ const updateProvider = async (providerId: string, providerData: Partial<IProvide
 
 const deleteProvider = async (providerId: string, userId: string): Promise<IDeleteResult> => {
     try {
-        // Verify if user exists
         const existingUser = await User.exists({ _id: userId });
 
         if (!existingUser) {
@@ -168,12 +260,11 @@ const deleteProvider = async (providerId: string, userId: string): Promise<IDele
             };
         }
 
-        // Soft delete: set deletedAt to current date
         const deletedProvider = await Provider.findOneAndUpdate(
             {
                 _id: providerId,
                 userId: userId,
-                deletedAt: null, // Only delete if not already deleted
+                deletedAt: null,
             },
             {
                 deletedAt: new Date(),
@@ -203,6 +294,8 @@ const deleteProvider = async (providerId: string, userId: string): Promise<IDele
 };
 
 export default {
+    getProviders,
+    getProviderById,
     createProvider,
     updateProvider,
     deleteProvider,
