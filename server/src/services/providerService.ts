@@ -1,4 +1,4 @@
-import { ICreateAndEditResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult, IDeleteResult } from '../interfaces/database.interface.js';
 import { IProvider } from '../interfaces/models.interface.js';
 import Provider from '../models/providerModel.js';
 import User from '../models/userModel.js';
@@ -156,7 +156,54 @@ const updateProvider = async (providerId: string, providerData: Partial<IProvide
     }
 };
 
+const deleteProvider = async (providerId: string, userId: string): Promise<IDeleteResult> => {
+    try {
+        // Verify if user exists
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+            };
+        }
+
+        // Soft delete: set deletedAt to current date
+        const deletedProvider = await Provider.findOneAndUpdate(
+            {
+                _id: providerId,
+                userId: userId,
+                deletedAt: null, // Only delete if not already deleted
+            },
+            {
+                deletedAt: new Date(),
+            }
+        );
+
+        if (!deletedProvider) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Provider not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Provider deleted successfully',
+        };
+    } catch (error) {
+        console.error('Error deleting provider:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while deleting the provider',
+        };
+    }
+};
+
 export default {
     createProvider,
     updateProvider,
+    deleteProvider,
 };

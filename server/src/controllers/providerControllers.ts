@@ -53,7 +53,31 @@ const updateProviderController = async (req: Request, res: Response) => {
     }
 };
 
+const deleteProviderController = async (req: Request, res: Response) => {
+    try {
+        const providerId = req.params.id;
+        const userId = req.user?.sub;
+
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        const response = await providerService.deleteProvider(providerId, userId);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else if (response.error === 'not_found') {
+            return errorHandler.handleNotFoundError(res, 'Provider not found');
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+};
+
 export {
     createProviderController,
     updateProviderController,
+    deleteProviderController,
 };
