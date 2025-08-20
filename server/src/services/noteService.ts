@@ -1,8 +1,101 @@
-import { ICreateAndEditResult, IDeleteResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult, IDeleteResult, IGetResult } from '../interfaces/database.interface.js';
 import { INote } from '../interfaces/models.interface.js';
 import Note from '../models/noteModel.js';
 import User from '../models/userModel.js';
 import Category from '../models/categoryModel.js';
+
+const getNotes = async (userId: string, order: string = 'desc', categoryId?: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'User not found',
+            };
+        }
+
+        const sortOrder = order === 'asc' ? 1 : -1;
+        const sortObject: any = {};
+        sortObject['createdAt'] = sortOrder;
+
+        const filters: any = { 
+            userId: userId, 
+            deletedAt: null 
+        };
+
+        if (categoryId) {
+            filters.categoryId = categoryId;
+        }
+
+        const notes = await Note.find(filters)
+            .sort(sortObject)
+            .populate({
+                path: 'categoryId',
+                select: 'name description',
+                match: { _id: { $ne: null } }
+            });
+
+        return {
+            success: true,
+            message: 'Notes retrieved successfully',
+            data: notes,
+        };
+    } catch (error) {
+        console.error('Error fetching notes:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the notes',
+        };
+    }
+};
+
+const getNoteById = async (noteId: string, userId: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+            };
+        }
+
+        const note = await Note.findOne({
+            _id: noteId,
+            userId: userId,
+            deletedAt: null,
+        })
+        .populate({
+            path: 'categoryId',
+            select: 'name description',
+            match: { _id: { $ne: null } }
+        });
+
+        if (!note) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Note not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Note retrieved successfully',
+            data: note,
+        };
+    } catch (error) {
+        console.error('Error fetching note:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the note',
+        };
+    }
+};
 
 const createNote = async (noteData: INote, userId: string): Promise<ICreateAndEditResult> => {
     try {
@@ -197,6 +290,8 @@ const deleteNote = async (noteId: string, userId: string): Promise<IDeleteResult
 };
 
 export default {
+    getNotes,
+    getNoteById,
     createNote,
     updateNote,
     deleteNote,
