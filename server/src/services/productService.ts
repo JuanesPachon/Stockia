@@ -1,4 +1,4 @@
-import { ICreateAndEditResult, IDeleteResult } from "../interfaces/database.interface.js";
+import { ICreateAndEditResult, IDeleteResult, IGetResult } from "../interfaces/database.interface.js";
 import { IProduct } from "../interfaces/models.interface.js";
 import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
@@ -54,6 +54,109 @@ const createProduct = async (productData: IProduct, userId: string): Promise<ICr
     }
 
 }
+
+const getProducts = async (userId: string, order: string = 'desc', categoryId?: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'User not found',
+            };
+        }
+
+        const sortOrder = order === 'asc' ? 1 : -1;
+        const sortObject: any = {};
+        sortObject['createdAt'] = sortOrder;
+
+        const filters: any = { 
+            userId: userId, 
+            deletedAt: null 
+        };
+
+        if (categoryId) {
+            filters.categoryId = categoryId;
+        }
+
+        const products = await Product.find(filters)
+            .sort(sortObject)
+            .populate({
+                path: 'categoryId',
+                select: 'name',
+                match: { _id: { $ne: null } }
+            })
+            .populate({
+                path: 'providerId', 
+                select: 'name',
+                match: { _id: { $ne: null } }
+            });
+
+        return {
+            success: true,
+            message: 'Products retrieved successfully',
+            data: products,
+        };
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the products',
+        };
+    }
+};
+
+const getProductById = async (productId: string, userId: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+            };
+        }
+
+        const product = await Product.findOne({
+            _id: productId,
+            userId: userId,
+            deletedAt: null,
+        })
+        .populate({
+            path: 'categoryId',
+            select: 'name description',
+            match: { _id: { $ne: null } }
+        })
+        .populate({
+            path: 'providerId',
+            select: 'name',
+            match: { _id: { $ne: null } }
+        });
+
+        if (!product) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Product not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Product retrieved successfully',
+            data: product,
+        };
+    } catch (error) {
+        console.error('Error fetching product:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the product',
+        };
+    }
+};
 
 const updateProduct = async (productId: string, productData: IProduct, userId: string): Promise<ICreateAndEditResult> => {
 
@@ -156,6 +259,8 @@ const deleteProduct = async (productId: string, userId: string): Promise<IDelete
 };
 
 export default {
+    getProducts,
+    getProductById,
     createProduct,
     updateProduct,
     deleteProduct,

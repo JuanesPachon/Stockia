@@ -19,7 +19,6 @@ const productSchema = new mongoose.Schema<IProduct>({
     },
     providerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Provider',
         required: false,
         default: null,
     },
@@ -37,6 +36,11 @@ const productSchema = new mongoose.Schema<IProduct>({
         type: String,
         required: false,
         default: null,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        required: true,
     },
     deletedAt: {
         type: Date,
