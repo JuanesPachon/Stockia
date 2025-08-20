@@ -53,7 +53,31 @@ const updateNoteController = async (req: Request, res: Response) => {
     }
 };
 
+const deleteNoteController = async (req: Request, res: Response) => {
+    try {
+        const noteId = req.params.id;
+        const userId = req.user?.sub;
+
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        const response = await noteService.deleteNote(noteId, userId);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else if (response.error === 'not_found') {
+            return errorHandler.handleNotFoundError(res, 'Note not found');
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+};
+
 export {
     createNoteController,
     updateNoteController,
+    deleteNoteController,
 };

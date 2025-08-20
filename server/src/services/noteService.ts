@@ -1,4 +1,4 @@
-import { ICreateAndEditResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult, IDeleteResult } from '../interfaces/database.interface.js';
 import { INote } from '../interfaces/models.interface.js';
 import Note from '../models/noteModel.js';
 import User from '../models/userModel.js';
@@ -152,7 +152,52 @@ const updateNote = async (noteId: string, noteData: Partial<INote>, userId: stri
     }
 };
 
+const deleteNote = async (noteId: string, userId: string): Promise<IDeleteResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+            };
+        }
+
+        const deletedNote = await Note.findOneAndUpdate(
+            {
+                _id: noteId,
+                userId: userId,
+                deletedAt: null,
+            },
+            {
+                deletedAt: new Date(),
+            }
+        );
+
+        if (!deletedNote) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Note not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Note deleted successfully',
+        };
+    } catch (error) {
+        console.error('Error deleting note:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while deleting the note',
+        };
+    }
+};
+
 export default {
     createNote,
     updateNote,
+    deleteNote,
 };
