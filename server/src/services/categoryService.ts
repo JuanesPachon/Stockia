@@ -52,7 +52,7 @@ const getCategoryById = async (categoryId: string, userId: string): Promise<IGet
         const category = await Category.findOne({
             _id: categoryId,
             userId: userId,
-            deleteAt: null,
+            deletedAt: null,
         });
 
         if (!category) {

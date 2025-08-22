@@ -46,3 +46,14 @@ export interface INote {
     createdAt: Date;
     deletedAt: Date | null;
 }
+
+export interface IExpense {
+    userId: Types.ObjectId;
+    title: string;
+    categoryId: Types.ObjectId | null;
+    amount: number;
+    providerId: Types.ObjectId | null;
+    description: string;
+    createdAt: Date;
+    deletedAt: Date | null;
+}
