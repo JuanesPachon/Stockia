@@ -2,6 +2,56 @@ import { Request, Response } from 'express';
 import expenseService from '../services/expenseService.js';
 import errorHandler from '../utils/errorHandler.js';
 
+const getExpensesController = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.sub;
+        const orderQuery = req.query.order;
+        const categoryIdQuery = req.query.categoryId;
+        
+        const order = typeof orderQuery === 'string' ? orderQuery : 'desc';
+        const categoryId = typeof categoryIdQuery === 'string' ? categoryIdQuery : undefined;
+
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        const response = await expenseService.getExpenses(userId, order, categoryId);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else if (response.error === 'not_found') {
+            return errorHandler.handleNotFoundError(res, 'User not found');
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+};
+
+const getExpenseController = async (req: Request, res: Response) => {
+    try {
+        const expenseId = req.params.id;
+        const userId = req.user?.sub;
+
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        const response = await expenseService.getExpenseById(expenseId, userId);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else if (response.error === 'not_found') {
+            return errorHandler.handleNotFoundError(res, 'Expense not found');
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+};
+
 const createExpenseController = async (req: Request, res: Response) => {
     try {
         const expenseData = req.body;
@@ -88,6 +138,8 @@ const deleteExpenseController = async (req: Request, res: Response) => {
 };
 
 export {
+    getExpensesController,
+    getExpenseController,
     createExpenseController,
     editExpenseController,
     deleteExpenseController,

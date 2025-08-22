@@ -1,9 +1,112 @@
-import { ICreateAndEditResult, IDeleteResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult, IDeleteResult, IGetResult } from '../interfaces/database.interface.js';
 import { IExpense } from '../interfaces/models.interface.js';
 import Expense from '../models/expenseModel.js';
 import User from '../models/userModel.js';
 import Category from '../models/categoryModel.js';
 import Provider from '../models/providerModel.js';
+
+const getExpenses = async (userId: string, order: string = 'desc', categoryId?: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'User not found',
+            };
+        }
+
+        const sortOrder = order === 'asc' ? 1 : -1;
+        const sortObject: any = {};
+        sortObject['createdAt'] = sortOrder;
+
+        const filters: any = { 
+            userId: userId, 
+            deletedAt: null 
+        };
+
+        if (categoryId) {
+            filters.categoryId = categoryId;
+        }
+
+        const expenses = await Expense.find(filters)
+            .sort(sortObject)
+            .populate({
+                path: 'categoryId',
+                select: 'name description',
+                match: { _id: { $ne: null } }
+            })
+            .populate({
+                path: 'providerId',
+                select: 'name contact',
+                match: { _id: { $ne: null } }
+            });
+
+        return {
+            success: true,
+            message: 'Expenses retrieved successfully',
+            data: expenses,
+        };
+    } catch (error) {
+        console.error('Error fetching expenses:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the expenses',
+        };
+    }
+};
+
+const getExpenseById = async (expenseId: string, userId: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+            };
+        }
+
+        const expense = await Expense.findOne({
+            _id: expenseId,
+            userId: userId,
+            deletedAt: null,
+        })
+        .populate({
+            path: 'categoryId',
+            select: 'name description',
+            match: { _id: { $ne: null } }
+        })
+        .populate({
+            path: 'providerId',
+            select: 'name contact',
+            match: { _id: { $ne: null } }
+        });
+
+        if (!expense) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'Expense not found or does not belong to the user',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Expense retrieved successfully',
+            data: expense,
+        };
+    } catch (error) {
+        console.error('Error fetching expense:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while fetching the expense',
+        };
+    }
+};
 
 const createExpense = async (expenseData: IExpense, userId: string): Promise<ICreateAndEditResult> => {
     try {
@@ -224,6 +327,8 @@ const deleteExpense = async (expenseId: string, userId: string): Promise<IDelete
 };
 
 export default {
+    getExpenses,
+    getExpenseById,
     createExpense,
     updateExpense,
     deleteExpense,
