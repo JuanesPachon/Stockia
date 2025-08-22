@@ -57,3 +57,13 @@ export interface IExpense {
     createdAt: Date;
     deletedAt: Date | null;
 }
+
+export interface ISale {
+    userId: Types.ObjectId;
+    products: Array<{
+        productId: Types.ObjectId;
+        quantity: number;
+    }>;
+    total: number;
+    createdAt: Date;
+}

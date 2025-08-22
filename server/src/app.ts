@@ -11,6 +11,7 @@ import productRoutes from "./routes/productRoutes.js";
 import providerRoutes from "./routes/providerRoutes.js";
 import noteRoutes from "./routes/noteRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
+import saleRoutes from "./routes/saleRoutes.js";
 
 const PORT = process.env.PORT || 3002;
 
@@ -35,6 +36,7 @@ app.use("/api/v1/", productRoutes);
 app.use("/api/v1/", providerRoutes);
 app.use("/api/v1/", noteRoutes);
 app.use("/api/v1/", expenseRoutes);
+app.use("/api/v1/", saleRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
