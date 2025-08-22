@@ -64,7 +64,31 @@ const editExpenseController = async (req: Request, res: Response) => {
     }
 };
 
+const deleteExpenseController = async (req: Request, res: Response) => {
+    try {
+        const expenseId = req.params.id;
+        const userId = req.user?.sub;
+
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        const response = await expenseService.deleteExpense(expenseId, userId);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else if (response.error === 'not_found') {
+            return errorHandler.handleNotFoundError(res, 'Expense not found');
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+};
+
 export {
     createExpenseController,
     editExpenseController,
+    deleteExpenseController,
 };
