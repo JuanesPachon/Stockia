@@ -1,5 +1,6 @@
 import 'package:client/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/custom_elevated_button.dart';
 import '../../../../shared/widgets/app_footer.dart';
 
@@ -83,15 +84,13 @@ class WelcomePage extends StatelessWidget {
   Widget _buildButtons(BuildContext context) {
     return Column(
       children: [
-        // Start button
         CustomElevatedButton(
           text: 'Inicia ahora',
           onPressed: () {
-
+            Navigator.pushNamed(context, AppRoutes.register);
           },
         ),
         const SizedBox(height: 16.0),
-        // Login link
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -102,7 +101,6 @@ class WelcomePage extends StatelessWidget {
                 fontSize: 14.0,
               ),
             ),
-            const SizedBox(width: 4),
             TextButton(
               onPressed: () {
 

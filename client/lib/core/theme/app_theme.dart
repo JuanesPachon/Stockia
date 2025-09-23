@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 class AppTheme {
@@ -7,6 +8,7 @@ class AppTheme {
       useMaterial3: true,
       primaryColor: AppColors.mainBlue,
       scaffoldBackgroundColor: AppColors.mainWhite,
+      fontFamily: GoogleFonts.lato().fontFamily,
       
       colorScheme: const ColorScheme.light(
         primary: AppColors.mainBlue,
