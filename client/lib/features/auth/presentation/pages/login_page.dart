@@ -94,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
                           text: 'Iniciar sesión',
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              
+                              Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
                             }
                           },
                         ),

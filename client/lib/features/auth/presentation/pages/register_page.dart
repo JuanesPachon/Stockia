@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/custom_elevated_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 
@@ -110,7 +111,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           text: 'Crear cuenta',
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              
+                              Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
                             }
                           },
                         ),
