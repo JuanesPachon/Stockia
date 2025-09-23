@@ -37,7 +37,6 @@ class _RegisterPageState extends State<RegisterPage> {
           child: IntrinsicHeight(
             child: Form(
               key: _formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 children: [
                   SizedBox(height: screenHeight * 0.05),

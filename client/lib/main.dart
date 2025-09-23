@@ -3,6 +3,7 @@ import 'core/constants/app_routes.dart';
 import 'core/theme/app_theme.dart';
 import 'features/onboarding/presentation/pages/welcome_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
+import 'features/auth/presentation/pages/login_page.dart';
 
 void main() {
   runApp(const StockiaApp());
@@ -20,6 +21,7 @@ class StockiaApp extends StatelessWidget {
       initialRoute: AppRoutes.welcome,
       routes: {
         AppRoutes.welcome: (context) => const WelcomePage(),
+        AppRoutes.login: (context) => const LoginPage(),
         AppRoutes.register: (context) => const RegisterPage(),
       },
     );

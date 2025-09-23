@@ -103,7 +103,7 @@ class WelcomePage extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-
+                Navigator.pushNamed(context, AppRoutes.login);
               },
               child: const Text(
                 'Inicia Sesión aquí.',
