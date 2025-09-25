@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 
-class CustomTextField extends StatelessWidget {
+class DefaultTextField extends StatelessWidget {
   final String label;
   final String? hintText;
   final bool obscureText;
@@ -9,7 +9,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
 
-  const CustomTextField({
+  const DefaultTextField({
     super.key,
     required this.label,
     this.hintText,

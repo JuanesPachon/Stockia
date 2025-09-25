@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
-import '../widgets/gestion_option_widget.dart';
+import '../widgets/management_option_widget.dart';
 
-class GestionPage extends StatefulWidget {
-  const GestionPage({super.key});
+class ManagementPage extends StatefulWidget {
+  const ManagementPage({super.key});
 
   @override
-  State<GestionPage> createState() => _GestionPageState();
+  State<ManagementPage> createState() => _ManagementPageState();
 }
 
-class _GestionPageState extends State<GestionPage> {
+class _ManagementPageState extends State<ManagementPage> {
   int _currentIndex = 1;
 
   @override
@@ -27,7 +27,7 @@ class _GestionPageState extends State<GestionPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.mainBlue),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushNamed(context, AppRoutes.dashboard);
           },
         ),
         title: const Text(
@@ -47,44 +47,44 @@ class _GestionPageState extends State<GestionPage> {
             crossAxisCount: 2,
             crossAxisSpacing: 15,
             mainAxisSpacing: 15,
-            childAspectRatio: 1.1,
+            childAspectRatio: 0.9,
             children: [
-              GestionOptionWidget(
+              ManagementOptionWidget(
                 title: 'Ventas',
                 iconPath: 'assets/icons/sales_icon.png',
                 onTap: () {
                   Navigator.pushNamed(context, AppRoutes.sales);
                 },
               ),
-              GestionOptionWidget(
+              ManagementOptionWidget(
                 title: 'Productos',
                 iconPath: 'assets/icons/products_icon.png',
                 onTap: () {
                   Navigator.pushNamed(context, AppRoutes.products);
                 },
               ),
-              GestionOptionWidget(
+              ManagementOptionWidget(
                 title: 'Proveedores',
                 iconPath: 'assets/icons/providers_icon.png',
                 onTap: () {
                   Navigator.pushNamed(context, AppRoutes.providers);
                 },
               ),
-              GestionOptionWidget(
+              ManagementOptionWidget(
                 title: 'Gastos',
                 iconPath: 'assets/icons/spends_icon.png',
                 onTap: () {
                   Navigator.pushNamed(context, AppRoutes.expenses);
                 },
               ),
-              GestionOptionWidget(
+              ManagementOptionWidget(
                 title: 'Notas',
                 iconPath: 'assets/icons/notes_icon.png',
                 onTap: () {
                   Navigator.pushNamed(context, AppRoutes.notes);
                 },
               ),
-              GestionOptionWidget(
+              ManagementOptionWidget(
                 title: 'Categorías',
                 iconPath: 'assets/icons/categories_icon.png',
                 onTap: () {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
-import '../../../../shared/widgets/custom_elevated_button.dart';
-import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/default_button.dart';
+import '../../../../shared/widgets/default_textfield.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -40,11 +40,11 @@ class _RegisterPageState extends State<RegisterPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  SizedBox(height: screenHeight * 0.05),
+                  SizedBox(height: screenHeight * 0.1),
           
                   Image.asset('assets/images/stockia_logo.png', height: 60),
           
-                  SizedBox(height: screenHeight * 0.02),
+                  SizedBox(height: screenHeight * 0.05),
           
                   const Text(
                     '¡Regístrate!',
@@ -61,7 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Column(
                     spacing: 15,
                     children: [
-                      CustomTextField(
+                      DefaultTextField(
                         label: 'Nombre completo:',
                         controller: _nameController,
                         keyboardType: TextInputType.name,
@@ -73,7 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         },
                       ),
           
-                      CustomTextField(
+                      DefaultTextField(
                         label: 'Email:',
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
@@ -90,7 +90,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         },
                       ),
           
-                      CustomTextField(
+                      DefaultTextField(
                         label: 'Contraseña:',
                         controller: _passwordController,
                         obscureText: true,
@@ -107,11 +107,11 @@ class _RegisterPageState extends State<RegisterPage> {
           
                       const SizedBox(height: 5),
           
-                        CustomElevatedButton(
+                        DefaultButton(
                           text: 'Crear cuenta',
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+                              Navigator.pushReplacementNamed(context, AppRoutes.management);
                             }
                           },
                         ),
@@ -163,7 +163,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           TextButton(
                             onPressed: () {
-                              Navigator.pop(context);
+                              Navigator.pushReplacementNamed(context, AppRoutes.login);
                             },
                             child: const Text(
                               'Inicia Sesión aquí.',

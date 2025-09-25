@@ -1,7 +1,7 @@
 import 'package:client/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_routes.dart';
-import '../../../../shared/widgets/custom_elevated_button.dart';
+import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/app_footer.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -84,7 +84,7 @@ class WelcomePage extends StatelessWidget {
   Widget _buildButtons(BuildContext context) {
     return Column(
       children: [
-        CustomElevatedButton(
+        DefaultButton(
           text: 'Inicia ahora',
           onPressed: () {
             Navigator.pushNamed(context, AppRoutes.register);

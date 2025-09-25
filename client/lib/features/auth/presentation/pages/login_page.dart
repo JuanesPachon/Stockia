@@ -1,8 +1,8 @@
 import 'package:client/core/constants/app_routes.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../shared/widgets/custom_elevated_button.dart';
-import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/default_button.dart';
+import '../../../../shared/widgets/default_textfield.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -43,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
                   children: [
-                    SizedBox(height: screenHeight * 0.08),
+                    SizedBox(height: screenHeight * 0.1),
 
                     Image.asset('assets/images/stockia_logo.png', height: 60),
 
@@ -59,12 +59,12 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
-                    SizedBox(height: screenHeight * 0.06),
+                    SizedBox(height: screenHeight * 0.05),
 
                     Column(
                       spacing: 15,
                       children: [
-                        CustomTextField(
+                        DefaultTextField(
                           label: 'Email:',
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
 
-                        CustomTextField(
+                        DefaultTextField(
                           label: 'Contraseña:',
                           controller: _passwordController,
                           obscureText: true,
@@ -90,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
 
                         SizedBox(height: screenHeight * 0.01),
 
-                        CustomElevatedButton(
+                        DefaultButton(
                           text: 'Iniciar sesión',
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {

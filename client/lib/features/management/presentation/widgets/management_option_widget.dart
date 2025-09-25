@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
-class GestionOptionWidget extends StatelessWidget {
+class ManagementOptionWidget extends StatelessWidget {
   final String title;
   final String iconPath;
   final VoidCallback onTap;
 
-  const GestionOptionWidget({
+  const ManagementOptionWidget({
     super.key,
     required this.title,
     required this.iconPath,
@@ -27,8 +27,8 @@ class GestionOptionWidget extends StatelessWidget {
           children: [
             Image.asset(
               iconPath,
-              height: 48,
-              width: 48,
+              height: 60,
+              width: 60,
               color: AppColors.mainWhite,
             ),
             const SizedBox(height: 12),
