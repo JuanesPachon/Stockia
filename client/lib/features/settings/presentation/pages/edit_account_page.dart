@@ -71,8 +71,9 @@ class _EditAccountPageState extends State<EditAccountPage> {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     decoration: BoxDecoration(
+                      color: AppColors.mainBlue,
                       border: Border(
                         bottom: BorderSide(color: AppColors.mainBlue, width: 2),
                       ),
@@ -80,7 +81,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
                     child: const Text(
                       'Editar información:',
                       style: TextStyle(
-                        color: AppColors.mainBlue,
+                        color: AppColors.mainWhite,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../core/constants/app_colors.dart';
 
-class ProfileInfoCard extends StatelessWidget {
+class InfoDisplayCard extends StatelessWidget {
   final String label;
   final String value;
 
-  const ProfileInfoCard({
+  const InfoDisplayCard({
     super.key,
     required this.label,
     required this.value,

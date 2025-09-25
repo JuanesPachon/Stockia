@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
-import '../widgets/profile_info_card.dart';
+import '../../../../shared/widgets/info_display_card.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -52,6 +52,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
+                      color: AppColors.mainBlue,
                       border: Border(
                         bottom: BorderSide(color: AppColors.mainBlue, width: 2),
                       ),
@@ -59,22 +60,22 @@ class _SettingsPageState extends State<SettingsPage> {
                     child: const Text(
                       'Detalle de mi cuenta:',
                       style: TextStyle(
-                        color: AppColors.mainBlue,
+                        color: AppColors.mainWhite,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                   
-                  const ProfileInfoCard(
+                  const InfoDisplayCard(
                     label: 'Nombre completo:',
                     value: 'Pepito Perez',
                   ),
-                  const ProfileInfoCard(
+                  const InfoDisplayCard(
                     label: 'Correo electrónico:',
                     value: 'pepito.perez@gmail.com',
                   ),
-                  const ProfileInfoCard(
+                  const InfoDisplayCard(
                     label: 'Negocio:',
                     value: 'No asignado',
                   ),
@@ -137,45 +138,4 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.mainWhite,
-          title: const Text(
-            '¿Cerrar sesión?',
-            style: TextStyle(
-              color: AppColors.mainBlue,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          content: const Text(
-            '¿Estás seguro de que quieres cerrar sesión?',
-            style: TextStyle(color: AppColors.mainBlue),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancelar',
-                style: TextStyle(color: AppColors.mainBlue),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushReplacementNamed(context, AppRoutes.login);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.mainBlue,
-                foregroundColor: AppColors.mainWhite,
-              ),
-              child: const Text('Cerrar sesión'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
