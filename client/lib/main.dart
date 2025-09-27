@@ -1,5 +1,6 @@
 import 'package:client/features/management/presentation/pages/management_page.dart';
 import 'package:client/features/notes/presentation/pages/notes_page.dart';
+import 'package:client/features/products/presentation/pages/products_page.dart';
 import 'package:flutter/material.dart';
 import 'core/constants/app_routes.dart';
 import 'core/theme/app_theme.dart';
@@ -39,6 +40,7 @@ class StockiaApp extends StatelessWidget {
         AppRoutes.providers: (context) => const ProvidersPage(),
         AppRoutes.expenses: (context) => const ExpensesPage(),
         AppRoutes.notes: (context) => const NotesPage(),
+        AppRoutes.products: (context) => const ProductsPage(),
       },
     );
   }
