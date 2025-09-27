@@ -10,6 +10,7 @@ import 'features/settings/presentation/pages/settings_page.dart';
 import 'features/settings/presentation/pages/edit_account_page.dart';
 import 'features/categories/presentation/pages/categories_page.dart';
 import 'features/providers/presentation/pages/providers_page.dart';
+import 'features/expenses/presentation/pages/expenses_page.dart';
 
 void main() {
   runApp(const StockiaApp());
@@ -35,6 +36,7 @@ class StockiaApp extends StatelessWidget {
         AppRoutes.editAccount: (context) => const EditAccountPage(),
         AppRoutes.categories: (context) => const CategoriesPage(),
         AppRoutes.providers: (context) => const ProvidersPage(),
+        AppRoutes.expenses: (context) => const ExpensesPage(),
       },
     );
   }
