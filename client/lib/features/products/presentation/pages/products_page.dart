@@ -91,7 +91,12 @@ class _ProductsPageState extends State<ProductsPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(20),
-            child: DefaultButton(text: 'Agregar producto', onPressed: () {}),
+            child: DefaultButton(
+              text: 'Agregar producto', 
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.addProduct);
+              }
+            ),
           ),
 
           const Divider(color: AppColors.mainBlue, thickness: 2, height: 0),
