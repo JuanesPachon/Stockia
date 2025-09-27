@@ -4,6 +4,7 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/info_display_card.dart';
+import 'edit_note_page.dart';
 
 class NoteDetailPage extends StatefulWidget {
   final String id;
@@ -137,6 +138,17 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               child: DefaultButton(
                 text: 'Editar nota', 
                 onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditNotePage(
+                        id: widget.id,
+                        title: widget.title,
+                        category: widget.category,
+                        description: widget.description,
+                      ),
+                    ),
+                  );
                 },
               ),
             ),

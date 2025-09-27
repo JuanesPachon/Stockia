@@ -3,33 +3,50 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
-import '../../../../shared/widgets/info_display_card.dart';
-import 'edit_provider_page.dart';
+import '../../../../shared/widgets/default_textfield.dart';
+import '../../../../shared/widgets/default_dropdown.dart';
+import '../../../../shared/widgets/default_textarea.dart';
 
-class ProviderDetailPage extends StatefulWidget {
+class EditNotePage extends StatefulWidget {
   final String id;
-  final String name;
-  final String contact;
+  final String title;
   final String category;
-  final String status;
   final String description;
 
-  const ProviderDetailPage({
+  const EditNotePage({
     super.key,
     required this.id,
-    required this.name,
-    required this.contact,
+    required this.title,
     required this.category,
-    required this.status,
     required this.description,
   });
 
   @override
-  State<ProviderDetailPage> createState() => _ProviderDetailPageState();
+  State<EditNotePage> createState() => _EditNotePageState();
 }
 
-class _ProviderDetailPageState extends State<ProviderDetailPage> {
+class _EditNotePageState extends State<EditNotePage> {
   int _currentBottomIndex = 1;
+  
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
+  
+  String _selectedCategory = 'Urgente';
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.title);
+    _descriptionController = TextEditingController(text: widget.description);
+    _selectedCategory = widget.category;
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +67,7 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
         title: Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'Gestión > Proveedores > ${widget.id}',
+            'Gestión > Notas > Editar',
             style: const TextStyle(
               color: AppColors.mainBlue,
               fontSize: 16,
@@ -71,6 +88,7 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
+                      vertical: 12,
                     ),
                     decoration: const BoxDecoration(
                       color: AppColors.mainBlue,
@@ -78,63 +96,56 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
                         bottom: BorderSide(color: AppColors.mainBlue, width: 2),
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Detalle proveedor :',
-                          style: TextStyle(
-                            color: AppColors.mainWhite,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: AppColors.mainWhite,
-                            size: 32,
-                          ),
-                          onPressed: () {
-
-                          },
-                        ),
-                      ],
+                    child: const Text(
+                      'Editar nota:',
+                      style: TextStyle(
+                        color: AppColors.mainWhite,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
 
-                  Column(
-                    children: [
-                      InfoDisplayCard(
-                        label: 'Id:',
-                        value: widget.id,
-                      ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        DefaultTextField(
+                          label: 'Título de la nota:',
+                          controller: _titleController,
+                        ),
 
-                      InfoDisplayCard(
-                        label: 'Nombre del proveedor:',
-                        value: widget.name,
-                      ),
+                        const SizedBox(height: 20),
 
-                      InfoDisplayCard(
-                        label: 'Contacto:',
-                        value: widget.contact,
-                      ),
+                        DefaultDropdown(
+                          label: 'Categoría:',
+                          value: _selectedCategory,
+                          items: const [
+                            'Urgente',
+                            'Trabajo',
+                            'Inventario',
+                            'Recursos Humanos',
+                            'Personal',
+                            'Otros',
+                          ],
+                          onChanged: (String? newValue) {
+                            if (newValue != null) {
+                              setState(() {
+                                _selectedCategory = newValue;
+                              });
+                            }
+                          },
+                        ),
 
-                      InfoDisplayCard(
-                        label: 'Categoría:',
-                        value: widget.category,
-                      ),
+                        const SizedBox(height: 20),
 
-                      InfoDisplayCard(
-                        label: 'Estado:',
-                        value: widget.status,
-                      ),
-
-                      InfoDisplayCard(
-                        label: 'Descripción:',
-                        value: widget.description,
-                      ),
-                    ],
+                        DefaultTextArea(
+                          label: 'Descripción:',
+                          controller: _descriptionController,
+                          maxLines: 5,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -150,21 +161,16 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: DefaultButton(
-                text: 'Editar proveedor', 
+                text: 'Confirmar edición', 
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditProviderPage(
-                        id: widget.id,
-                        name: widget.name,
-                        contact: widget.contact,
-                        category: widget.category,
-                        status: widget.status,
-                        description: widget.description,
-                      ),
+                  // TODO: Implementar lógica de edición
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Nota editada exitosamente'),
+                      backgroundColor: Colors.green,
                     ),
                   );
+                  Navigator.pop(context);
                 },
               ),
             ),
