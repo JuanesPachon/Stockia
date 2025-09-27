@@ -81,7 +81,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             child: DefaultButton(
               text: 'Agregar categoría',
               onPressed: () {
-
+                Navigator.pushNamed(context, AppRoutes.addCategory);
               },
             ),
           ),

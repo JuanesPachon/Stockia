@@ -79,7 +79,12 @@ class _NotesPageState extends State<NotesPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(20),
-            child: DefaultButton(text: 'Agregar Nota', onPressed: () {}),
+            child: DefaultButton(
+              text: 'Agregar Nota', 
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.addNote);
+              }
+            ),
           ),
 
           const Divider(color: AppColors.mainBlue, thickness: 2, height: 0),

@@ -1,0 +1,151 @@
+import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_routes.dart';
+import '../../../../shared/widgets/app_navbar.dart';
+import '../../../../shared/widgets/default_button.dart';
+import '../../../../shared/widgets/default_textfield.dart';
+import '../../../../shared/widgets/default_textarea.dart';
+
+class AddCategoryPage extends StatefulWidget {
+  const AddCategoryPage({super.key});
+
+  @override
+  State<AddCategoryPage> createState() => _AddCategoryPageState();
+}
+
+class _AddCategoryPageState extends State<AddCategoryPage> {
+  int _currentBottomIndex = 1;
+  
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.mainWhite,
+      appBar: AppBar(
+        backgroundColor: AppColors.mainWhite,
+        elevation: 0,
+        shape: const Border(
+          bottom: BorderSide(color: AppColors.mainBlue, width: 2),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.mainBlue),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            'Gestión > Categorías > Agregar',
+            style: const TextStyle(
+              color: AppColors.mainBlue,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        centerTitle: false,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: AppColors.mainBlue,
+                      border: Border(
+                        bottom: BorderSide(color: AppColors.mainBlue, width: 2),
+                      ),
+                    ),
+                    child: const Text(
+                      'Agregar nueva categoría:',
+                      style: TextStyle(
+                        color: AppColors.mainWhite,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        DefaultTextField(
+                          label: 'Nombre de la categoría:',
+                          controller: _nameController,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        DefaultTextArea(
+                          label: 'Descripción:',
+                          controller: _descriptionController,
+                          maxLines: 5,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: AppColors.mainBlue, width: 2),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: DefaultButton(
+                text: 'Agregar categoría', 
+                onPressed: () {
+                  
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: NavBar(
+        currentIndex: _currentBottomIndex,
+        onTap: (index) {
+          setState(() {
+            _currentBottomIndex = index;
+          });
+
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, AppRoutes.management);
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, AppRoutes.settings);
+              break;
+          }
+        },
+      ),
+    );
+  }
+}
