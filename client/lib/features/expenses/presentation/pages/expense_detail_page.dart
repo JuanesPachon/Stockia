@@ -4,6 +4,7 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/info_display_card.dart';
+import 'edit_expense_page.dart';
 
 class ExpenseDetailPage extends StatefulWidget {
   final String id;
@@ -151,7 +152,19 @@ class _ExpenseDetailPageState extends State<ExpenseDetailPage> {
               child: DefaultButton(
                 text: 'Editar gasto', 
                 onPressed: () {
-                  // TODO: Implementar navegación a editar gasto
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditExpensePage(
+                        id: widget.id,
+                        title: widget.title,
+                        category: widget.category,
+                        amount: widget.amount,
+                        provider: widget.provider,
+                        description: widget.description,
+                      ),
+                    ),
+                  );
                 },
               ),
             ),

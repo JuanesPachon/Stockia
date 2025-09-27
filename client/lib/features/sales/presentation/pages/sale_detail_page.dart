@@ -134,7 +134,6 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                       ),
                       child: Row(
                         children: [
-                          // Imagen del producto
                           Container(
                             width: 60,
                             height: 60,
@@ -163,7 +162,6 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                           
                           const SizedBox(width: 16),
                           
-                          // Información del producto
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,7 +190,6 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                             ),
                           ),
                           
-                          // Cantidad y precio
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
@@ -220,7 +217,7 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

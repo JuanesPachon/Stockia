@@ -3,15 +3,15 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
-import '../../../../shared/widgets/info_display_card.dart';
-import 'edit_category_page.dart';
+import '../../../../shared/widgets/default_textfield.dart';
+import '../../../../shared/widgets/default_textarea.dart';
 
-class CategoryDetailPage extends StatefulWidget {
+class EditCategoryPage extends StatefulWidget {
   final String id;
   final String name;
   final String description;
 
-  const CategoryDetailPage({
+  const EditCategoryPage({
     super.key,
     required this.id,
     required this.name,
@@ -19,11 +19,28 @@ class CategoryDetailPage extends StatefulWidget {
   });
 
   @override
-  State<CategoryDetailPage> createState() => _CategoryDetailPageState();
+  State<EditCategoryPage> createState() => _EditCategoryPageState();
 }
 
-class _CategoryDetailPageState extends State<CategoryDetailPage> {
+class _EditCategoryPageState extends State<EditCategoryPage> {
   int _currentBottomIndex = 1;
+  
+  late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.name);
+    _descriptionController = TextEditingController(text: widget.description);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,18 +55,18 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.mainBlue),
           onPressed: () {
-        Navigator.pop(context);
+            Navigator.pop(context);
           },
         ),
         title: Align(
           alignment: Alignment.centerRight,
           child: Text(
-        'Gestión > Categorías > ${widget.id}',
-        style: const TextStyle(
-          color: AppColors.mainBlue,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+            'Gestión > Categorías > Editar',
+            style: const TextStyle(
+              color: AppColors.mainBlue,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         centerTitle: false,
@@ -65,6 +82,7 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
+                      vertical: 12,
                     ),
                     decoration: const BoxDecoration(
                       color: AppColors.mainBlue,
@@ -72,45 +90,34 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                         bottom: BorderSide(color: AppColors.mainBlue, width: 2),
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                        const Text(
-                          'Detalle categoría :',
-                          style: TextStyle(
-                          color: AppColors.mainWhite,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                          Icons.delete,
-                          color: AppColors.mainWhite,
-                          size: 32,
-                          ),
-                          onPressed: () {
-
-                          },
-                        ),
-                      ],
+                    child: const Text(
+                      'Editar categoría:',
+                      style: TextStyle(
+                        color: AppColors.mainWhite,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
 
-                  Column(
-                    children: [
-                      InfoDisplayCard(label: 'Id:', value: widget.id),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        DefaultTextField(
+                          label: 'Nombre de la categoría:',
+                          controller: _nameController,
+                        ),
 
-                      InfoDisplayCard(
-                        label: 'Nombre de la categoría:',
-                        value: widget.name,
-                      ),
+                        const SizedBox(height: 20),
 
-                      InfoDisplayCard(
-                        label: 'Descripción:',
-                        value: widget.description,
-                      ),
-                    ],
+                        DefaultTextArea(
+                          label: 'Descripción:',
+                          controller: _descriptionController,
+                          maxLines: 4,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -125,18 +132,12 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
             ),
             child: Padding(
               padding: const EdgeInsets.all(20),
-              child: DefaultButton(text: 'Editar categoría', onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditCategoryPage(
-                      id: widget.id,
-                      name: widget.name,
-                      description: widget.description,
-                    ),
-                  ),
-                );
-              }),
+              child: DefaultButton(
+                text: 'Confirmar edición', 
+                onPressed: () {
+                  
+                },
+              ),
             ),
           ),
         ],
@@ -163,5 +164,4 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
       ),
     );
   }
-
 }
