@@ -4,6 +4,7 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/info_display_card.dart';
+import 'edit_product_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String id;
@@ -199,7 +200,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: DefaultButton(
                 text: 'Editar producto', 
                 onPressed: () {
-                  // TODO: Implementar navegación a editar producto
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditProductPage(
+                        id: widget.id,
+                        name: widget.name,
+                        category: widget.category,
+                        provider: widget.provider,
+                        stock: widget.stock,
+                        price: widget.price,
+                        description: widget.description,
+                        imageUrl: widget.imageUrl,
+                      ),
+                    ),
+                  );
                 },
               ),
             ),
