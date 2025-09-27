@@ -83,7 +83,12 @@ class _ProvidersPageState extends State<ProvidersPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(20),
-            child: DefaultButton(text: 'Agregar Proveedor', onPressed: () {}),
+            child: DefaultButton(
+              text: 'Agregar Proveedor', 
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.addProvider);
+              }
+            ),
           ),
 
           const Divider(color: AppColors.mainBlue, thickness: 2, height: 0),

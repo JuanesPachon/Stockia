@@ -91,7 +91,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(20),
-            child: DefaultButton(text: 'Agregar gastos', onPressed: () {}),
+            child: DefaultButton(
+              text: 'Agregar gastos', 
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.addExpense);
+              }
+            ),
           ),
 
           const Divider(color: AppColors.mainBlue, thickness: 2, height: 0),

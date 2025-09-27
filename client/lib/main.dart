@@ -14,7 +14,9 @@ import 'features/settings/presentation/pages/edit_account_page.dart';
 import 'features/categories/presentation/pages/categories_page.dart';
 import 'features/categories/presentation/pages/add_category_page.dart';
 import 'features/providers/presentation/pages/providers_page.dart';
+import 'features/providers/presentation/pages/add_provider_page.dart';
 import 'features/expenses/presentation/pages/expenses_page.dart';
+import 'features/expenses/presentation/pages/add_expense_page.dart';
 import 'features/notes/presentation/pages/add_note_page.dart';
 
 void main() {
@@ -42,7 +44,9 @@ class StockiaApp extends StatelessWidget {
         AppRoutes.categories: (context) => const CategoriesPage(),
         AppRoutes.addCategory: (context) => const AddCategoryPage(),
         AppRoutes.providers: (context) => const ProvidersPage(),
+        AppRoutes.addProvider: (context) => const AddProviderPage(),
         AppRoutes.expenses: (context) => const ExpensesPage(),
+        AppRoutes.addExpense: (context) => const AddExpensePage(),
         AppRoutes.notes: (context) => const NotesPage(),
         AppRoutes.addNote: (context) => const AddNotePage(),
         AppRoutes.products: (context) => const ProductsPage(),
