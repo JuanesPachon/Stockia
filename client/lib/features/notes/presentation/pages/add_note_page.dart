@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -144,7 +145,18 @@ class _AddNotePageState extends State<AddNotePage> {
               child: DefaultButton(
                 text: 'Agregar nota', 
                 onPressed: () {
+                  final String noteTitle = _titleController.text.trim();
                   
+                  showCustomDialog(
+                    context,
+                    title: 'Se ha agregado la nota:',
+                    message: '777 - $noteTitle',
+                    primaryButtonText: "Aceptar",
+                    onPrimaryPressed: () => {
+                      Navigator.pop(context),
+                      Navigator.pop(context),
+                    },
+                  );
                 },
               ),
             ),

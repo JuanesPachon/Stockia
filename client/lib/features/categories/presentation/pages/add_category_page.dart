@@ -1,3 +1,4 @@
+import 'package:client/shared/widgets/custom_alert_dialog.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
@@ -119,7 +120,19 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
               child: DefaultButton(
                 text: 'Agregar categoría', 
                 onPressed: () {
+
+                  final String categoryName = _nameController.text.trim();
                   
+                  showCustomDialog(
+                    context,
+                    title: 'Se ha agregado la categoría:',
+                    message: '777 - $categoryName',
+                    primaryButtonText: "Aceptar",
+                    onPrimaryPressed: () => {
+                      Navigator.pop(context),
+                      Navigator.pop(context),
+                    },
+                  );
                 },
               ),
             ),

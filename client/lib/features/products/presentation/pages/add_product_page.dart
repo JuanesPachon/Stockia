@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -237,7 +238,18 @@ class _AddProductPageState extends State<AddProductPage> {
               child: DefaultButton(
                 text: 'Agregar producto', 
                 onPressed: () {
+                  final String productName = _nameController.text.trim();
                   
+                  showCustomDialog(
+                    context,
+                    title: 'Se ha agregado el producto:',
+                    message: '777 - $productName',
+                    primaryButtonText: "Aceptar",
+                    onPrimaryPressed: () => {
+                      Navigator.pop(context),
+                      Navigator.pop(context),
+                    },
+                  );
                 },
               ),
             ),

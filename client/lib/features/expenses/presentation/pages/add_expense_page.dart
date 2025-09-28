@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -176,7 +177,18 @@ class _AddExpensePageState extends State<AddExpensePage> {
               child: DefaultButton(
                 text: 'Agregar gasto', 
                 onPressed: () {
+                  final String expenseTitle = _titleController.text.trim();
                   
+                  showCustomDialog(
+                    context,
+                    title: 'Se ha agregado el gasto:',
+                    message: '777 - $expenseTitle',
+                    primaryButtonText: "Aceptar",
+                    onPrimaryPressed: () => {
+                      Navigator.pop(context),
+                      Navigator.pop(context),
+                    },
+                  );
                 },
               ),
             ),

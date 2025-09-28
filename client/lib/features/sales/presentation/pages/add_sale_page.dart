@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -285,6 +286,18 @@ class _AddSalePageState extends State<AddSalePage> {
                   text: 'Agregar venta',
                   onPressed: () {
                     
+                    final double total = _products.fold(0.0, (sum, product) => sum + (product['price'] * product['quantity']));
+                    
+                    showCustomDialog(
+                      context,
+                      title: 'Se ha agregado la venta:',
+                      message: '777 - Total: \$${total.toStringAsFixed(0)}',
+                      primaryButtonText: "Aceptar",
+                      onPrimaryPressed: () => {
+                        Navigator.pop(context),
+                        Navigator.pop(context),
+                      },
+                    );
                   },
                 ),
               ],

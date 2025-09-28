@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -172,7 +173,18 @@ class _AddProviderPageState extends State<AddProviderPage> {
               child: DefaultButton(
                 text: 'Agregar proveedor', 
                 onPressed: () {
+                  final String providerName = _nameController.text.trim();
                   
+                  showCustomDialog(
+                    context,
+                    title: 'Se ha agregado el proveedor:',
+                    message: '777 - $providerName',
+                    primaryButtonText: "Aceptar",
+                    onPrimaryPressed: () => {
+                      Navigator.pop(context),
+                      Navigator.pop(context),
+                    },
+                  );
                 },
               ),
             ),
