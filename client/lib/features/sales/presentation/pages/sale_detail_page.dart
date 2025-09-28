@@ -139,6 +139,7 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                             height: 60,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.mainBlue, width: 1),
                               color: Colors.orange.shade300,
                             ),
                             child: ClipRRect(

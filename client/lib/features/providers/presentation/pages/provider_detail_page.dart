@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -96,7 +97,23 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
                             size: 32,
                           ),
                           onPressed: () {
-
+                            showDialog<void>(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return CustomAlertDialog(
+                                  title: '¿Quieres eliminar este proveedor?',
+                                  message: '#777 - ${widget.name}',
+                                  primaryButtonText: "Eliminar",
+                                  secondaryButtonText: "Cancelar",
+                                  onPrimaryPressed: () {
+                                    Navigator.of(context).pop();
+                                    Navigator.pop(context);
+                                  },
+                                  onSecondaryPressed: () => Navigator.of(context).pop(),
+                                );
+                              },
+                            );
                           },
                         ),
                       ],

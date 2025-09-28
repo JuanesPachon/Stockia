@@ -36,12 +36,12 @@ class ProductCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Imagen del producto
           Container(
             width: 80,
             height: 80,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.mainBlue, width: 1),
               color: Colors.orange.shade300,
             ),
             child: ClipRRect(
@@ -65,7 +65,6 @@ class ProductCard extends StatelessWidget {
           
           const SizedBox(width: 16),
           
-          // Información del producto
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

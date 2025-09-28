@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -198,53 +199,17 @@ class _ExpenseDetailPageState extends State<ExpenseDetailPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.mainWhite,
-          title: const Text(
-            'Eliminar Gasto',
-            style: TextStyle(
-              color: AppColors.mainBlue,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            '¿Estás seguro de que deseas eliminar el gasto "${widget.title}"?',
-            style: const TextStyle(
-              color: AppColors.mainBlue,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Cancelar',
-                style: TextStyle(
-                  color: AppColors.mainBlue,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Gasto eliminado exitosamente'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'Eliminar',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+        return CustomAlertDialog(
+          title: '¿Quieres eliminar este gasto?',
+          message: '#777 - ${widget.title}',
+          primaryButtonText: "Eliminar",
+          secondaryButtonText: "Cancelar",
+          onPrimaryPressed: () {
+            Navigator.of(context).pop();
+            Navigator.pop(context);
+            // Aquí iría la lógica de eliminación
+          },
+          onSecondaryPressed: () => Navigator.of(context).pop(),
         );
       },
     );

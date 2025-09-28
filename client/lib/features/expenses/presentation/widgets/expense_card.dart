@@ -96,10 +96,14 @@ class ExpenseCard extends StatelessWidget {
           
           const SizedBox(height: 16),
           
-          DefaultButton(
-            text: 'Detalles',
-            onPressed: onDetailsPressed,
-            height: 40,
+          Align(
+            alignment: Alignment.centerRight,
+            child: DefaultButton(
+              text: 'Detalles',
+              onPressed: onDetailsPressed,
+              width: 250,
+              height: 35,
+            ),
           ),
         ],
       ),
