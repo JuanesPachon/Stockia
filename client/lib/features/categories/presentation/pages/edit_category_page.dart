@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -135,7 +136,19 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
               child: DefaultButton(
                 text: 'Confirmar edición', 
                 onPressed: () {
+                  final String categoryName = _nameController.text.trim();
                   
+                  showCustomDialog(
+                    context,
+                    title: 'Se ha editado la categoría:',
+                    message: '777 - ${categoryName.isNotEmpty ? categoryName : "Sin nombre"}',
+                    showSecondaryButton: false,
+                    primaryButtonText: "Aceptar",
+                    onPrimaryPressed: () => {
+                      Navigator.pop(context),
+                      Navigator.pop(context),
+                    },
+                  );
                 },
               ),
             ),

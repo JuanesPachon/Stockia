@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -192,15 +193,17 @@ class _EditAccountPageState extends State<EditAccountPage> {
 
   void _saveChanges() {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          duration: Duration(seconds: 3),
-          content: Text('Cambios guardados exitosamente', style: TextStyle(color: AppColors.mainBlue, fontWeight: FontWeight.bold),),
-          backgroundColor: Colors.green,
-        ),
+      
+      showCustomDialog(
+        context,
+        title: 'Se ha editado tu perfil exitosamente',
+        showSecondaryButton: false,
+        primaryButtonText: "Aceptar",
+        onPrimaryPressed: () => {
+          Navigator.pop(context),
+          Navigator.pop(context),
+        },
       );
-
-      Navigator.pop(context);
     }
   }
 }

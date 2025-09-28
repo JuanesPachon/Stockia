@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -267,6 +268,19 @@ class _EditProductPageState extends State<EditProductPage> {
               child: DefaultButton(
                 text: 'Confirmar edición', 
                 onPressed: () {
+                  final String productName = _nameController.text.trim();
+                  
+                  showCustomDialog(
+                    context,
+                    title: 'Se ha editado el producto:',
+                    message: '777 - ${productName.isNotEmpty ? productName : "Sin nombre"}',
+                    showSecondaryButton: false,
+                    primaryButtonText: "Aceptar",
+                    onPrimaryPressed: () => {
+                      Navigator.pop(context),
+                      Navigator.pop(context),
+                    },
+                  );
                 },
               ),
             ),

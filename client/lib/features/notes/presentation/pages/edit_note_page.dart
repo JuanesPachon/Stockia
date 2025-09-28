@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -163,14 +164,19 @@ class _EditNotePageState extends State<EditNotePage> {
               child: DefaultButton(
                 text: 'Confirmar edición', 
                 onPressed: () {
-                  // TODO: Implementar lógica de edición
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Nota editada exitosamente'),
-                      backgroundColor: Colors.green,
-                    ),
+                  final String noteTitle = _titleController.text.trim();
+                  
+                  showCustomDialog(
+                    context,
+                    title: 'Se ha editado la nota:',
+                    message: '777 - ${noteTitle.isNotEmpty ? noteTitle : "Sin título"}',
+                    showSecondaryButton: false,
+                    primaryButtonText: "Aceptar",
+                    onPrimaryPressed: () => {
+                      Navigator.pop(context),
+                      Navigator.pop(context),
+                    },
                   );
-                  Navigator.pop(context);
                 },
               ),
             ),

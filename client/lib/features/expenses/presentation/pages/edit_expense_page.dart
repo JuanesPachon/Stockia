@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
@@ -200,7 +201,19 @@ class _EditExpensePageState extends State<EditExpensePage> {
               child: DefaultButton(
                 text: 'Confirmar edición', 
                 onPressed: () {
-
+                  final String expenseTitle = _titleController.text.trim();
+                  
+                  showCustomDialog(
+                    context,
+                    title: 'Se ha editado el gasto:',
+                    message: '777 - ${expenseTitle.isNotEmpty ? expenseTitle : "Sin título"}',
+                    showSecondaryButton: false,
+                    primaryButtonText: "Aceptar",
+                    onPrimaryPressed: () => {
+                      Navigator.pop(context),
+                      Navigator.pop(context),
+                    },
+                  );
                 },
               ),
             ),
