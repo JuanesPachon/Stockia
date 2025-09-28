@@ -9,6 +9,7 @@ class AppRoutes {
   static const String products = '/products';
   static const String addProduct = '/add-product';
   static const String sales = '/sales';
+  static const String addSale = '/add-sale';
   static const String expenses = '/expenses';
   static const String expenseDetail = '/expense-detail';
   static const String addExpense = '/add-expense';

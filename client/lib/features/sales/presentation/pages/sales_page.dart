@@ -145,7 +145,12 @@ class _SalesPageState extends State<SalesPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(20),
-            child: DefaultButton(text: 'Agregar venta', onPressed: () {}),
+            child: DefaultButton(
+              text: 'Agregar venta', 
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.addSale);
+              }
+            ),
           ),
 
           const Divider(color: AppColors.mainBlue, thickness: 2, height: 0),
@@ -153,7 +158,7 @@ class _SalesPageState extends State<SalesPage> {
           Container(
             decoration: const BoxDecoration(color: AppColors.mainBlue),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Row(
                 children: [
                   const Text(
