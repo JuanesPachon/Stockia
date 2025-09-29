@@ -34,7 +34,7 @@ class StockiaApp extends StatelessWidget {
       title: 'Stockia',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.dashboard,
+      initialRoute: AppRoutes.welcome,
       routes: {
         AppRoutes.welcome: (context) => const WelcomePage(),
         AppRoutes.login: (context) => const LoginPage(),

@@ -3,6 +3,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/default_textfield.dart';
+import '../../../../data/services/auth_service.dart';
+import '../../../../data/models/auth/register_request.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -16,6 +18,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
+  
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -23,6 +28,72 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final registerRequest = RegisterRequest(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      final response = await _authService.register(registerRequest);
+
+      if (response.success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Cuenta creada exitosamente'),
+              backgroundColor: Colors.green[800],
+            ),
+          );
+          Navigator.pushReplacementNamed(context, AppRoutes.login);
+        }
+      } else {
+        if (mounted) {
+          
+          String errorMessage = 'Error al crear la cuenta';
+          if (response.error == 'duplicate') {
+            errorMessage = 'Ya existe una cuenta con este email';
+          } else if (response.error?.toLowerCase().contains('network') == true) {
+            errorMessage = 'Error de conexión. Verifica tu internet.';
+          } else if (response.error?.toLowerCase().contains('timeout') == true) {
+            errorMessage = 'Tiempo de espera agotado. Intenta nuevamente.';
+          } else {
+            errorMessage = 'Error al crear la cuenta, intentalo de nuevo mas tarde';
+          }
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado. Intente nuevamente.'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -67,24 +138,33 @@ class _RegisterPageState extends State<RegisterPage> {
                         keyboardType: TextInputType.name,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Por favor ingrese su nombre';
+                            return 'El nombre es requerido';
+                          }
+                          if (value.length < 2 || value.length > 30) {
+                            return 'El nombre debe tener entre 2 y 30 caracteres';
+                          }
+                          if (!RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$').hasMatch(value)) {
+                            return 'El nombre solo debe contener letras';
                           }
                           return null;
                         },
                       ),
-          
+
                       DefaultTextField(
                         label: 'Email:',
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Por favor ingrese su email';
+                            return 'El email es requerido';
                           }
                           if (!RegExp(
                             r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                           ).hasMatch(value)) {
                             return 'Por favor ingrese un email válido';
+                          }
+                          if (value.length > 100) {
+                            return 'El email no debe exceder 100 caracteres';
                           }
                           return null;
                         },
@@ -96,11 +176,12 @@ class _RegisterPageState extends State<RegisterPage> {
                         obscureText: true,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Por favor ingrese su contraseña';
+                            return 'La contraseña es requerida';
                           }
-                          if (value.length < 8) {
-                            return 'La contraseña debe tener al menos 8 caracteres';
+                          if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$').hasMatch(value)) {
+                            return 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial';
                           }
+                          
                           return null;
                         },
                       ),
@@ -108,12 +189,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 5),
           
                         DefaultButton(
-                          text: 'Crear cuenta',
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              Navigator.pushReplacementNamed(context, AppRoutes.management);
-                            }
-                          },
+                          text: _isLoading ? 'Creando cuenta...' : 'Crear cuenta',
+                          onPressed: _isLoading ? null : _handleRegister,
                         ),
           
                       Row(

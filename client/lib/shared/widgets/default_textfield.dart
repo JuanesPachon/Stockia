@@ -45,6 +45,7 @@ class DefaultTextField extends StatelessWidget {
               filled: true,
               fillColor: const Color.fromARGB(255, 205, 187, 152),
               isDense: true,
+              errorMaxLines: 3,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: const BorderSide(
