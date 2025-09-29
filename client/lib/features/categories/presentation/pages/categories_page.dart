@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/category_service.dart';
+import '../../../../data/models/category.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../widgets/category_card.dart';
@@ -16,37 +18,156 @@ class CategoriesPage extends StatefulWidget {
 class _CategoriesPageState extends State<CategoriesPage> {
   int _currentBottomIndex = 1;
   String _selectedFilter = 'Mas recientes';
+  final CategoryService _categoryService = CategoryService();
+  
+  List<Category> _categories = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<Map<String, String>> _categories = [
-    {
-      'id': '#8',
-      'name': 'Comida',
-      'fullName': '#8 Comida',
-      'description': 'Categoría para todos los implementos relacionados a alimentos y demas cosas relacionadas',
-      'date': '28-08-2025',
-    },
-    {
-      'id': '#9',
-      'name': 'Bebidas',
-      'fullName': '#9 Bebidas',
-      'description': 'Categoría para todos los tipos de bebidas y líquidos',
-      'date': '27-08-2025',
-    },
-    {
-      'id': '#10',
-      'name': 'Limpieza',
-      'fullName': '#10 Limpieza',
-      'description': 'Categoría para productos de limpieza y aseo',
-      'date': '26-08-2025',
-    },
-    {
-      'id': '#11',
-      'name': 'Electrónicos',
-      'fullName': '#11 Electrónicos',
-      'description': 'Categoría para dispositivos y componentes electrónicos',
-      'date': '25-08-2025',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final order = _selectedFilter == 'Mas recientes' ? 'desc' : 'asc';
+      
+      final response = await _categoryService.getCategories(order: order);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          if (response.success && response.data != null) {
+            _categories = response.data!;
+          } else {
+            _errorMessage = response.error ?? 'Error al cargar categorías';
+            _categories = [];
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Error inesperado: $e';
+          _categories = [];
+        });
+      }
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
+  }
+
+  Widget _buildCategoriesList() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainBlue),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.red[800],
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadCategories,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.mainBlue,
+                foregroundColor: AppColors.mainWhite,
+              ),
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_categories.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.category_outlined,
+              size: 64,
+              color: AppColors.mainBlue,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'No hay categorías disponibles',
+              style: TextStyle(
+                color: AppColors.mainBlue,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Agrega tu primera categoría usando el botón de arriba',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: _categories.length,
+      itemBuilder: (context, index) {
+        final category = _categories[index];
+        return CategoryCard(
+          name: category.name,
+          description: category.description ?? 'Sin descripción',
+          date: _formatDate(category.createdAt),
+          onDetailsPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CategoryDetailPage(
+                  categoryId: category.id,
+                ),
+              ),
+            );
+            if (result == true) {
+              _loadCategories(); 
+            }
+          },
+          isEven: index % 2 == 0,
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,8 +201,11 @@ class _CategoriesPageState extends State<CategoriesPage> {
             padding: const EdgeInsets.all(20),
             child: DefaultButton(
               text: 'Agregar categoría',
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.addCategory);
+              onPressed: () async {
+                final result = await Navigator.pushNamed(context, AppRoutes.addCategory);
+                if (result == true) {
+                  _loadCategories(); 
+                }
               },
             ),
           ),
@@ -130,10 +254,11 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       ),
                     ],
                     onChanged: (String? newValue) {
-                      if (newValue != null) {
+                      if (newValue != null && newValue != _selectedFilter) {
                         setState(() {
                           _selectedFilter = newValue;
                         });
+                        _loadCategories();
                       }
                     },
                     dropdownColor: AppColors.mainBlue,
@@ -150,30 +275,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
           ),
 
           Expanded(
-            child: ListView.builder(
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                final category = _categories[index];
-                return CategoryCard(
-                  name: category['fullName']!,
-                  description: category['description']!,
-                  date: category['date']!,
-                  onDetailsPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CategoryDetailPage(
-                          id: category['id']!,
-                          name: category['name']!,
-                          description: category['description']!,
-                        ),
-                      ),
-                    );
-                  },
-                  isEven: index % 2 == 0,
-                );
-              },
-            ),
+            child: _buildCategoriesList(),
           ),
         ],
       ),

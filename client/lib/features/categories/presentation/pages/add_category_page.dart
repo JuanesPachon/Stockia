@@ -60,8 +60,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
           showCustomDialog(
             context,
             title: 'Se ha agregado la categoría:',
-            // ignore: unnecessary_string_interpolations
-            message: '${category.name}',
+            message: category.name,
             showSecondaryButton: false,
             primaryButtonText: "Aceptar",
             onPrimaryPressed: () {

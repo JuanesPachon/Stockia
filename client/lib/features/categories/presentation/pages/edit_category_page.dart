@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/category_service.dart';
+import '../../../../data/models/category/create_category_request.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/default_textfield.dart';
@@ -25,9 +27,13 @@ class EditCategoryPage extends StatefulWidget {
 
 class _EditCategoryPageState extends State<EditCategoryPage> {
   int _currentBottomIndex = 1;
+  final _formKey = GlobalKey<FormState>();
+  final CategoryService _categoryService = CategoryService();
   
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
+  
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -41,6 +47,74 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _updateCategory() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final request = CreateCategoryRequest(
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty 
+            ? null 
+            : _descriptionController.text.trim(),
+      );
+
+      final response = await _categoryService.updateCategory(widget.id, request);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response.success && response.data != null) {
+          final category = response.data!;
+          showCustomDialog(
+            context,
+            title: 'Se ha editado la categoría:',
+            message: category.name,
+            showSecondaryButton: false,
+            primaryButtonText: "Aceptar",
+            onPrimaryPressed: () {
+              Navigator.pop(context); 
+              Navigator.pop(context, true);
+            },
+          );
+        } else {
+          String errorMessage = 'Error al actualizar la categoría, intente nuevamente.';
+          
+          final error = response.error?.toLowerCase() ?? '';
+          
+          if (error.contains('duplicate')) {
+            errorMessage = 'Ya existe una categoría con ese nombre.';
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -103,21 +177,32 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
 
                   Padding(
                     padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        DefaultTextField(
-                          label: 'Nombre de la categoría:',
-                          controller: _nameController,
-                        ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          DefaultTextField(
+                            label: 'Nombre de la categoría:',
+                            controller: _nameController,
+                            hintText: 'Ingresa el nombre de la categoría',
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'El nombre de la categoría es requerido';
+                              }
+                              return null;
+                            },
+                          ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        DefaultTextArea(
-                          label: 'Descripción:',
-                          controller: _descriptionController,
-                          maxLines: 4,
-                        ),
-                      ],
+                          DefaultTextArea(
+                            label: 'Descripción:',
+                            controller: _descriptionController,
+                            hintText: 'Descripción opcional de la categoría',
+                            maxLines: 5,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -134,22 +219,8 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: DefaultButton(
-                text: 'Confirmar edición', 
-                onPressed: () {
-                  final String categoryName = _nameController.text.trim();
-                  
-                  showCustomDialog(
-                    context,
-                    title: 'Se ha editado la categoría:',
-                    message: '777 - ${categoryName.isNotEmpty ? categoryName : "Sin nombre"}',
-                    showSecondaryButton: false,
-                    primaryButtonText: "Aceptar",
-                    onPrimaryPressed: () => {
-                      Navigator.pop(context),
-                      Navigator.pop(context),
-                    },
-                  );
-                },
+                text: _isLoading ? 'Guardando...' : 'Confirmar edición', 
+                onPressed: _isLoading ? null : _updateCategory,
               ),
             ),
           ),
