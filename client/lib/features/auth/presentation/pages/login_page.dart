@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/default_textfield.dart';
+import '../../../../data/services/auth_service.dart';
+import '../../../../data/models/auth/login_request.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,12 +17,62 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
+  
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final loginRequest = LoginRequest(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      final response = await _authService.login(loginRequest);
+
+      if (response.success) {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.message == 'Invalid credentials' ? 'Credenciales inválidas' : 'Credenciales incorrectas.'),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado. Intente nuevamente.'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -68,35 +120,19 @@ class _LoginPageState extends State<LoginPage> {
                           label: 'Email:',
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor ingrese su email';
-                            }
-                            return null;
-                          },
                         ),
 
                         DefaultTextField(
                           label: 'Contraseña:',
                           controller: _passwordController,
                           obscureText: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor ingrese su contraseña';
-                            }
-                            return null;
-                          },
                         ),
 
                         SizedBox(height: screenHeight * 0.01),
 
                         DefaultButton(
-                          text: 'Iniciar sesión',
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
-                            }
-                          },
+                          text: _isLoading ? 'Iniciando sesión...' : 'Iniciar sesión',
+                          onPressed: _isLoading ? null : _handleLogin,
                         ),
 
                         SizedBox(height: 5),
