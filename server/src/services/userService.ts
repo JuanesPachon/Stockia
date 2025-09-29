@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { IUser } from '../interfaces/models.interface.js';
-import { ICreateAndEditResult, ILoginResult, IRegisterResult } from '../interfaces/database.interface.js';
+import { ICreateAndEditResult, IGetResult, ILoginResult, IRegisterResult } from '../interfaces/database.interface.js';
 import User from '../models/userModel.js';
 import { Auth } from '../interfaces/auth.interface.js';
 import jwt from 'jsonwebtoken';
@@ -71,6 +71,31 @@ const loginUser = async (loginRequest: Auth): Promise<ILoginResult> => {
     }
 };
 
+const getUserById = async (id: string): Promise<IGetResult> => {
+    try {
+        const user = await User.findById(id).select('-password');
+        if (!user) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'User not found',
+            };
+        }
+
+        return {
+            success: true,
+            message: 'User retrieved successfully',
+            data: user,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: 'server',
+            message: 'Error occurred while retrieving user',
+        };
+    }
+};
+
 const editUser = async (id: string, userData: Partial<IUser>): Promise<ICreateAndEditResult> => {
     try {
 
@@ -102,5 +127,6 @@ const editUser = async (id: string, userData: Partial<IUser>): Promise<ICreateAn
 export default {
     createUser,
     loginUser,
+    getUserById,
     editUser,
 };
