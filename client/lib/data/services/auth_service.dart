@@ -64,7 +64,7 @@ class AuthService {
       if (name != null) updateData['name'] = name;
       if (businessName != null) updateData['businessName'] = businessName;
 
-      final response = await _apiClient.put<User>(
+      final response = await _apiClient.patch<User>(
         ApiEndpoints.user,
         updateData,
         fromJson: (json) => User.fromJson(json),

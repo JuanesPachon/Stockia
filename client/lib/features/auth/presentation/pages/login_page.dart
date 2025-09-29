@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response.message == 'Invalid credentials' ? 'Credenciales inválidas' : 'Credenciales incorrectas.'),
+              content: Text(response.error?.toLowerCase().contains('invalid credentials') == true ? 'Credenciales inválidas' : 'Error inesperado. Intente nuevamente.'),
               backgroundColor: Colors.red[800],
             ),
           );

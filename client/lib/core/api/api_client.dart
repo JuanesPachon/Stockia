@@ -12,8 +12,8 @@ class ApiClient {
     _dio.interceptors.add(CookieManager(_cookieJar));
     
     _dio.options = BaseOptions(
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -85,6 +85,32 @@ class ApiClient {
       }
 
       final response = await _dio.put(
+        endpoint,
+        data: body,
+        options: options,
+      );
+
+      return _handleResponse<T>(response, fromJson);
+    } on DioException catch (e) {
+      return _handleDioError(e);
+    } catch (e) {
+      return ApiResponse.error('Error inesperado: $e');
+    }
+  }
+
+  Future<ApiResponse<T>> patch<T>(
+    String endpoint,
+    Map<String, dynamic> body, {
+    T? Function(Map<String, dynamic>)? fromJson,
+    Map<String, String>? additionalHeaders,
+  }) async {
+    try {
+      final options = Options();
+      if (additionalHeaders != null) {
+        options.headers = additionalHeaders;
+      }
+
+      final response = await _dio.patch(
         endpoint,
         data: body,
         options: options,
