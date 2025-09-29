@@ -2,6 +2,8 @@ import 'package:client/shared/widgets/custom_alert_dialog.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/category_service.dart';
+import '../../../../data/models/category/create_category_request.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/default_textfield.dart';
@@ -16,15 +18,88 @@ class AddCategoryPage extends StatefulWidget {
 
 class _AddCategoryPageState extends State<AddCategoryPage> {
   int _currentBottomIndex = 1;
+  final _formKey = GlobalKey<FormState>();
+  final CategoryService _categoryService = CategoryService();
   
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _createCategory() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final request = CreateCategoryRequest(
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty 
+            ? null 
+            : _descriptionController.text.trim(),
+      );
+
+      final response = await _categoryService.createCategory(request);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response.success && response.data != null) {
+          final category = response.data!;
+          showCustomDialog(
+            context,
+            title: 'Se ha agregado la categoría:',
+            // ignore: unnecessary_string_interpolations
+            message: '${category.name}',
+            showSecondaryButton: false,
+            primaryButtonText: "Aceptar",
+            onPrimaryPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context, true);
+            },
+          );
+        } else {
+          String errorMessage = 'Error al crear la categoría, intente nuevamente.';
+          
+          final error = response.error?.toLowerCase() ?? '';
+          
+          if (error.contains('duplicate')) {
+            errorMessage = 'Ya existe una categoría con ese nombre.';
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -87,21 +162,24 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
 
                   Padding(
                     padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        DefaultTextField(
-                          label: 'Nombre de la categoría:',
-                          controller: _nameController,
-                        ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          DefaultTextField(
+                            label: 'Nombre de la categoría:',
+                            controller: _nameController,
+                          ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        DefaultTextArea(
-                          label: 'Descripción:',
-                          controller: _descriptionController,
-                          maxLines: 5,
-                        ),
-                      ],
+                          DefaultTextArea(
+                            label: 'Descripción:',
+                            controller: _descriptionController,
+                            maxLines: 5,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -118,22 +196,8 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: DefaultButton(
-                text: 'Agregar categoría', 
-                onPressed: () {
-
-                  final String categoryName = _nameController.text.trim();
-                  
-                  showCustomDialog(
-                    context,
-                    title: 'Se ha agregado la categoría:',
-                    message: '777 - $categoryName',
-                    primaryButtonText: "Aceptar",
-                    onPrimaryPressed: () => {
-                      Navigator.pop(context),
-                      Navigator.pop(context),
-                    },
-                  );
-                },
+                text: _isLoading ? 'Agregando...' : 'Agregar categoría', 
+                onPressed: _isLoading ? null : _createCategory,
               ),
             ),
           ),

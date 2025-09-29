@@ -157,11 +157,11 @@ class ApiClient {
         }
       }
 
-      final errorMessage = response.data is Map<String, dynamic>
-          ? response.data['message'] ?? 'Error del servidor (${response.statusCode})'
-          : 'Error del servidor (${response.statusCode})';
+      if (response.data is Map<String, dynamic>) {
+        return ApiResponse.fromJson(response.data, fromJson);
+      }
       
-      return ApiResponse.error(errorMessage);
+      return ApiResponse.error('Error del servidor (${response.statusCode})');
     } catch (e) {
       return ApiResponse.error(
         'Error del servidor (${response.statusCode}): ${response.data}',
@@ -181,8 +181,9 @@ class ApiClient {
         final statusCode = e.response?.statusCode;
         final data = e.response?.data;
         
-        if (data is Map<String, dynamic> && data.containsKey('message')) {
-          return ApiResponse.error(data['message']);
+        if (data is Map<String, dynamic>) {
+          // Crear ApiResponse usando fromJson para capturar todos los campos
+          return ApiResponse.fromJson(data, null);
         }
         
         return ApiResponse.error('Error del servidor ($statusCode)');
