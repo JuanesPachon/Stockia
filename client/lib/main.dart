@@ -7,6 +7,7 @@ import 'package:client/features/sales/presentation/pages/add_sale_page.dart';
 import 'package:flutter/material.dart';
 import 'core/constants/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'features/splash/presentation/pages/splash_page.dart';
 import 'features/onboarding/presentation/pages/welcome_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
@@ -34,8 +35,9 @@ class StockiaApp extends StatelessWidget {
       title: 'Stockia',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.welcome,
+      initialRoute: AppRoutes.splash,
       routes: {
+        AppRoutes.splash: (context) => const SplashPage(),
         AppRoutes.welcome: (context) => const WelcomePage(),
         AppRoutes.login: (context) => const LoginPage(),
         AppRoutes.register: (context) => const RegisterPage(),
