@@ -18,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
-  
+
   bool _isLoading = false;
 
   @override
@@ -51,7 +51,11 @@ class _LoginPageState extends State<LoginPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response.error?.toLowerCase().contains('invalid credentials') == true ? 'Credenciales inválidas' : 'Error inesperado. Intente nuevamente.'),
+              content: Text(
+                response.message?.toLowerCase() == 'invalid credentials'
+                    ? 'Credenciales inválidas'
+                    : 'Error inesperado. Intente nuevamente.',
+              ),
               backgroundColor: Colors.red[800],
             ),
           );
@@ -87,7 +91,10 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: screenHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
+              minHeight:
+                  screenHeight -
+                  MediaQuery.of(context).padding.top -
+                  MediaQuery.of(context).padding.bottom,
             ),
             child: IntrinsicHeight(
               child: Form(
@@ -131,7 +138,9 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(height: screenHeight * 0.01),
 
                         DefaultButton(
-                          text: _isLoading ? 'Iniciando sesión...' : 'Iniciar sesión',
+                          text: _isLoading
+                              ? 'Iniciando sesión...'
+                              : 'Iniciar sesión',
                           onPressed: _isLoading ? null : _handleLogin,
                         ),
 
@@ -184,7 +193,10 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             TextButton(
                               onPressed: () {
-                                Navigator.pushNamed(context, AppRoutes.register);
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.register,
+                                );
                               },
                               child: const Text(
                                 'Regístrate aquí.',

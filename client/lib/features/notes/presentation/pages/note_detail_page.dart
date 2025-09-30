@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/note_service.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/info_display_card.dart';
@@ -11,6 +12,7 @@ class NoteDetailPage extends StatefulWidget {
   final String id;
   final String title;
   final String category;
+  final String? categoryId;
   final String description;
 
   const NoteDetailPage({
@@ -18,6 +20,7 @@ class NoteDetailPage extends StatefulWidget {
     required this.id,
     required this.title,
     required this.category,
+    this.categoryId,
     required this.description,
   });
 
@@ -27,6 +30,60 @@ class NoteDetailPage extends StatefulWidget {
 
 class _NoteDetailPageState extends State<NoteDetailPage> {
   int _currentBottomIndex = 1;
+  final NoteService _noteService = NoteService();
+  bool _isLoading = false;
+
+  Future<void> _deleteNote() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _noteService.deleteNote(widget.id);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response.success) {
+          showCustomDialog(
+            context,
+            title: 'Nota eliminada exitosamente',
+            message: widget.title,
+            showSecondaryButton: false,
+            primaryButtonText: "Aceptar",
+            onPrimaryPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context, true);
+            },
+          );
+        } else {
+          String errorMessage = 'Error al eliminar la nota, intente nuevamente.';
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +104,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
         title: Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'Gestión > Notas > ${widget.id}',
+            'Notas > Detalle',
             style: const TextStyle(
               color: AppColors.mainBlue,
               fontSize: 16,
@@ -87,12 +144,21 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: AppColors.mainWhite,
-                            size: 32,
-                          ),
-                          onPressed: () {
+                          icon: _isLoading 
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainWhite),
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.delete,
+                                  color: AppColors.mainWhite,
+                                  size: 32,
+                                ),
+                          onPressed: _isLoading ? null : () {
                             _showDeleteDialog();
                           },
                         ),
@@ -102,11 +168,6 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
 
                   Column(
                     children: [
-                      InfoDisplayCard(
-                        label: 'Id:',
-                        value: widget.id,
-                      ),
-
                       InfoDisplayCard(
                         label: 'Título de la nota:',
                         value: widget.title,
@@ -137,19 +198,22 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: DefaultButton(
-                text: 'Editar nota', 
-                onPressed: () {
-                  Navigator.push(
+                text: _isLoading ? 'Procesando...' : 'Editar nota', 
+                onPressed: _isLoading ? null : () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => EditNotePage(
                         id: widget.id,
                         title: widget.title,
-                        category: widget.category,
+                        categoryId: widget.categoryId,
                         description: widget.description,
                       ),
                     ),
                   );
+                  if (result == true) {
+                    Navigator.pop(context, true);
+                  }
                 },
               ),
             ),
@@ -185,13 +249,12 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
       builder: (BuildContext context) {
         return CustomAlertDialog(
           title: '¿Quieres eliminar esta nota?',
-          message: '#777 - ${widget.title}',
+          message: widget.title,
           primaryButtonText: "Eliminar",
           secondaryButtonText: "Cancelar",
           onPrimaryPressed: () {
             Navigator.of(context).pop();
-            Navigator.pop(context);
-            // Aquí iría la lógica de eliminación
+            _deleteNote();
           },
           onSecondaryPressed: () => Navigator.of(context).pop(),
         );

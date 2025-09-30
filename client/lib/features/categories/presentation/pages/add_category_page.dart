@@ -165,9 +165,15 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          DefaultTextField(
+                            DefaultTextField(
                             label: 'Nombre de la categoría:',
                             controller: _nameController,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Este campo es requerido';
+                              }
+                              return null;
+                            },
                           ),
 
                           const SizedBox(height: 20),

@@ -38,7 +38,7 @@ class NoteCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '$id - $title',
+                  title,
                   style: const TextStyle(
                     color: AppColors.mainBlue,
                     fontSize: 18,

@@ -187,7 +187,7 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
                             hintText: 'Ingresa el nombre de la categoría',
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'El nombre de la categoría es requerido';
+                                return 'Este campo es requerido';
                               }
                               return null;
                             },

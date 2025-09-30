@@ -2,23 +2,26 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/note_service.dart';
+import '../../../../data/services/category_service.dart';
+import '../../../../data/models/note/create_note_request.dart';
+import '../../../../data/models/category.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/default_textfield.dart';
-import '../../../../shared/widgets/default_dropdown.dart';
 import '../../../../shared/widgets/default_textarea.dart';
 
 class EditNotePage extends StatefulWidget {
   final String id;
   final String title;
-  final String category;
+  final String? categoryId;
   final String description;
 
   const EditNotePage({
     super.key,
     required this.id,
     required this.title,
-    required this.category,
+    this.categoryId,
     required this.description,
   });
 
@@ -28,18 +31,25 @@ class EditNotePage extends StatefulWidget {
 
 class _EditNotePageState extends State<EditNotePage> {
   int _currentBottomIndex = 1;
-  
+  final _formKey = GlobalKey<FormState>();
+  final NoteService _noteService = NoteService();
+  final CategoryService _categoryService = CategoryService();
+
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  
-  String _selectedCategory = 'Urgente';
+
+  bool _isLoading = false;
+  bool _isLoadingCategories = false;
+  List<Category> _categories = [];
+  String? _selectedCategoryId;
 
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.title);
     _descriptionController = TextEditingController(text: widget.description);
-    _selectedCategory = widget.category;
+    _selectedCategoryId = widget.categoryId;
+    _loadCategories();
   }
 
   @override
@@ -47,6 +57,111 @@ class _EditNotePageState extends State<EditNotePage> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoadingCategories = true;
+    });
+
+    try {
+      final response = await _categoryService.getCategories();
+
+      if (mounted && response.success && response.data != null) {
+        setState(() {
+          _categories = response.data!;
+          
+          if (_selectedCategoryId != null) {
+            final categoryExists = _categories.any((cat) => cat.id == _selectedCategoryId);
+            if (!categoryExists) {
+              _selectedCategoryId = null; 
+            }
+          }
+          
+          _isLoadingCategories = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingCategories = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _updateNote() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final request = CreateNoteRequest(
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        categoryId: _selectedCategoryId,
+      );
+
+      final response = await _noteService.updateNote(widget.id, request);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response.success && response.data != null) {
+          final note = response.data!;
+          showCustomDialog(
+            context,
+            title: 'Se ha editado la nota:',
+            message: note.title,
+            showSecondaryButton: false,
+            primaryButtonText: "Aceptar",
+            onPrimaryPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context, true);
+            },
+          );
+        } else {
+          String errorMessage =
+              'Error al actualizar la nota, intente nuevamente.';
+
+          final error = response.error?.toLowerCase() ?? '';
+
+          if (error.contains('duplicate')) {
+            errorMessage = 'Ya existe una nota con ese título.';
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -68,7 +183,7 @@ class _EditNotePageState extends State<EditNotePage> {
         title: Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'Gestión > Notas > Editar',
+            'Notas > Editar',
             style: const TextStyle(
               color: AppColors.mainBlue,
               fontSize: 16,
@@ -109,43 +224,154 @@ class _EditNotePageState extends State<EditNotePage> {
 
                   Padding(
                     padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        DefaultTextField(
-                          label: 'Título de la nota:',
-                          controller: _titleController,
-                        ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          DefaultTextField(
+                            label: 'Título de la nota:',
+                            controller: _titleController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'El título de la nota es requerido';
+                              }
+                              return null;
+                            },
+                          ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        DefaultDropdown(
-                          label: 'Categoría:',
-                          value: _selectedCategory,
-                          items: const [
-                            'Urgente',
-                            'Trabajo',
-                            'Inventario',
-                            'Recursos Humanos',
-                            'Personal',
-                            'Otros',
-                          ],
-                          onChanged: (String? newValue) {
-                            if (newValue != null) {
-                              setState(() {
-                                _selectedCategory = newValue;
-                              });
-                            }
-                          },
-                        ),
+                          _isLoadingCategories
+                              ? Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Categoría:',
+                                        style: TextStyle(
+                                          color: AppColors.mainBlue,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.mainWhite,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.mainBlue,
+                                          ),
+                                        ),
+                                        child: const Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                            ),
+                                            SizedBox(width: 12),
+                                            Text('Cargando categorías...'),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Categoría (opcional):',
+                                      style: TextStyle(
+                                        color: AppColors.mainBlue,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.mainWhite,
+                                        border: Border.all(
+                                          color: AppColors.mainBlue,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          value: _selectedCategoryId,
+                                          hint: const Text(
+                                            'Seleccionar categoría',
+                                            style: TextStyle(
+                                              color: AppColors.mainBlue,
+                                            ),
+                                          ),
+                                          isExpanded: true,
+                                          items: [
+                                            const DropdownMenuItem<String>(
+                                              value: null,
+                                              child: Text(
+                                                'Sin categoría',
+                                                style: TextStyle(
+                                                  color: AppColors.mainBlue,
+                                                ),
+                                              ),
+                                            ),
+                                            ..._categories.map((category) {
+                                              return DropdownMenuItem<String>(
+                                                value: category.id,
+                                                child: Text(
+                                                  category.name,
+                                                  style: const TextStyle(
+                                                    color: AppColors.mainBlue,
+                                                  ),
+                                                ),
+                                              );
+                                            }),
+                                          ],
+                                          onChanged: (String? newValue) {
+                                            setState(() {
+                                              _selectedCategoryId = newValue;
+                                            });
+                                          },
+                                          dropdownColor: AppColors.mainWhite,
+                                          style: const TextStyle(
+                                            color: AppColors.mainBlue,
+                                          ),
+                                          iconEnabledColor: AppColors.mainBlue,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        DefaultTextArea(
-                          label: 'Descripción:',
-                          controller: _descriptionController,
-                          maxLines: 5,
-                        ),
-                      ],
+                          DefaultTextArea(
+                            label: 'Descripción:',
+                            controller: _descriptionController,
+                            maxLines: 5,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'La descripción de la nota es requerida';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -162,22 +388,8 @@ class _EditNotePageState extends State<EditNotePage> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: DefaultButton(
-                text: 'Confirmar edición', 
-                onPressed: () {
-                  final String noteTitle = _titleController.text.trim();
-                  
-                  showCustomDialog(
-                    context,
-                    title: 'Se ha editado la nota:',
-                    message: '777 - ${noteTitle.isNotEmpty ? noteTitle : "Sin título"}',
-                    showSecondaryButton: false,
-                    primaryButtonText: "Aceptar",
-                    onPrimaryPressed: () => {
-                      Navigator.pop(context),
-                      Navigator.pop(context),
-                    },
-                  );
-                },
+                text: _isLoading ? 'Editando...' : 'Confirmar edición',
+                onPressed: _isLoading ? null : _updateNote,
               ),
             ),
           ),

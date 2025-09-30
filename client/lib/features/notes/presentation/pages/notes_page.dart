@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/note_service.dart';
+import '../../../../data/services/category_service.dart';
+import '../../../../data/models/note.dart';
+import '../../../../data/models/category.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../widgets/note_card.dart';
@@ -16,38 +20,203 @@ class NotesPage extends StatefulWidget {
 class _NotesPageState extends State<NotesPage> {
   int _currentBottomIndex = 1;
   String _selectedFilter = 'Mas recientes';
-  String _selectedCategory = 'Selecciona';
+  String? _selectedCategoryId;
+  final NoteService _noteService = NoteService();
+  final CategoryService _categoryService = CategoryService();
 
-  final List<Map<String, String>> _notes = [
-    {
-      'id': '#3',
-      'title': 'Problema x',
-      'category': 'Urgente',
-      'shortDescription': 'Se tiene que probar si se usa esto o esto...',
-      'fullDescription': 'Se tiene que probar si se usa esto de manera inadecuada puede provocar que se tenga que seguir los siguientes pasos:',
-    },
-    {
-      'id': '#4',
-      'title': 'Reunión mensual',
-      'category': 'Trabajo',
-      'shortDescription': 'Recordar temas importantes a tratar...',
-      'fullDescription': 'Recordar temas importantes a tratar en la reunión mensual del equipo de desarrollo y ventas.',
-    },
-    {
-      'id': '#5',
-      'title': 'Inventario bodega',
-      'category': 'Inventario',
-      'shortDescription': 'Verificar stock de productos principales...',
-      'fullDescription': 'Verificar stock de productos principales en bodega y actualizar sistema con cantidades reales.',
-    },
-    {
-      'id': '#6',
-      'title': 'Capacitación personal',
-      'category': 'Recursos Humanos',
-      'shortDescription': 'Programar sesión de capacitación...',
-      'fullDescription': 'Programar sesión de capacitación para el nuevo personal en procedimientos de atención al cliente.',
-    },
-  ];
+  List<Note> _notes = [];
+  List<Category> _categories = [];
+  bool _isLoading = true;
+  bool _isLoadingCategories = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+    _loadNotes();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoadingCategories = true;
+    });
+
+    try {
+      final response = await _categoryService.getCategories();
+
+      if (mounted && response.success && response.data != null) {
+        setState(() {
+          _categories = response.data!;
+          _isLoadingCategories = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingCategories = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadNotes() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final order = _selectedFilter == 'Mas recientes' ? 'desc' : 'asc';
+
+      final response = await _noteService.getNotes(order: order);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          if (response.success && response.data != null) {
+            List<Note> allNotes = response.data!;
+
+            if (_selectedCategoryId != null &&
+                _selectedCategoryId!.isNotEmpty) {
+              _notes = allNotes
+                  .where((note) => note.categoryId == _selectedCategoryId)
+                  .toList();
+            } else {
+              _notes = allNotes;
+            }
+          } else {
+            _errorMessage = response.error ?? 'Error al cargar notas';
+            _notes = [];
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Error inesperado: $e';
+          _notes = [];
+        });
+      }
+    }
+  }
+
+  String _getCategoryName(String? categoryId) {
+    if (categoryId == null || categoryId.isEmpty) return 'Sin categoría';
+
+    final category = _categories.firstWhere(
+      (cat) => cat.id == categoryId,
+      orElse: () => Category(
+        id: '',
+        userId: '',
+        name: 'Categoría desconocida',
+        createdAt: DateTime.now(),
+      ),
+    );
+    return category.name;
+  }
+
+  Widget _buildNotesList() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainBlue),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.red[800], fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadNotes,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.mainBlue,
+                foregroundColor: AppColors.mainWhite,
+              ),
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_notes.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.note_outlined, size: 64, color: AppColors.mainBlue),
+            SizedBox(height: 16),
+            Text(
+              'No hay notas disponibles',
+              style: TextStyle(
+                color: AppColors.mainBlue,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Agrega una nota o cambia el filtro',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.mainBlue, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: _notes.length,
+      itemBuilder: (context, index) {
+        final note = _notes[index];
+        return NoteCard(
+          id: note.id,
+          title: note.title,
+          category: _getCategoryName(note.categoryId),
+          description: note.description.length > 50
+              ? '${note.description.substring(0, 50)}...'
+              : note.description,
+          onDetailsPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NoteDetailPage(
+                  id: note.id,
+                  title: note.title,
+                  category: _getCategoryName(note.categoryId),
+                  categoryId: note.categoryId,
+                  description: note.description,
+                ),
+              ),
+            );
+            if (result == true) {
+              _loadNotes();
+            }
+          },
+          isEven: index % 2 == 0,
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,10 +249,16 @@ class _NotesPageState extends State<NotesPage> {
           Padding(
             padding: const EdgeInsets.all(20),
             child: DefaultButton(
-              text: 'Agregar Nota', 
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.addNote);
-              }
+              text: 'Agregar Nota',
+              onPressed: () async {
+                final result = await Navigator.pushNamed(
+                  context,
+                  AppRoutes.addNote,
+                );
+                if (result == true) {
+                  _loadNotes();
+                }
+              },
             ),
           ),
 
@@ -130,10 +305,11 @@ class _NotesPageState extends State<NotesPage> {
                           ),
                         ],
                         onChanged: (String? newValue) {
-                          if (newValue != null) {
+                          if (newValue != null && newValue != _selectedFilter) {
                             setState(() {
                               _selectedFilter = newValue;
                             });
+                            _loadNotes();
                           }
                         },
                         dropdownColor: AppColors.mainBlue,
@@ -160,48 +336,57 @@ class _NotesPageState extends State<NotesPage> {
 
                       const Spacer(),
 
-                      DropdownButton<String>(
-                        value: _selectedCategory,
-                        underline: const SizedBox(),
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: AppColors.mainWhite,
-                        ),
-                        style: const TextStyle(
-                          color: AppColors.mainWhite,
-                          fontSize: 14,
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Selecciona',
-                            child: Text('Selecciona'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Urgente',
-                            child: Text('Urgente'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Trabajo',
-                            child: Text('Trabajo'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Inventario',
-                            child: Text('Inventario'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Recursos Humanos',
-                            child: Text('Recursos Humanos'),
-                          ),
-                        ],
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _selectedCategory = newValue;
-                            });
-                          }
-                        },
-                        dropdownColor: AppColors.mainBlue,
-                      ),
+                      _isLoadingCategories
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.mainWhite,
+                                ),
+                              ),
+                            )
+                          : DropdownButton<String>(
+                              value: _selectedCategoryId,
+                              underline: const SizedBox(),
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: AppColors.mainWhite,
+                              ),
+                              style: const TextStyle(
+                                color: AppColors.mainWhite,
+                                fontSize: 14,
+                              ),
+                              hint: const Text(
+                                'Todas las categorías',
+                                style: TextStyle(
+                                  color: AppColors.mainWhite,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  child: Text('Todas las categorías', style: TextStyle()),
+                                ),
+                                ..._categories.map((category) {
+                                  return DropdownMenuItem<String>(
+                                    value: category.id,
+                                    child: Text(category.name, style: TextStyle()),
+                                  );
+                                }),
+                              ],
+                              onChanged: (String? newValue) {
+                                if (newValue != _selectedCategoryId) {
+                                  setState(() {
+                                    _selectedCategoryId = newValue;
+                                  });
+                                  _loadNotes();
+                                }
+                              },
+                              dropdownColor: AppColors.mainBlue,
+                            ),
                     ],
                   ),
 
@@ -213,34 +398,7 @@ class _NotesPageState extends State<NotesPage> {
 
           const Divider(color: AppColors.mainBlue, thickness: 2, height: 0),
 
-          Expanded(
-            child: ListView.builder(
-              itemCount: _notes.length,
-              itemBuilder: (context, index) {
-                final note = _notes[index];
-                return NoteCard(
-                  id: note['id']!,
-                  title: note['title']!,
-                  category: note['category']!,
-                  description: note['shortDescription']!,
-                  onDetailsPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => NoteDetailPage(
-                          id: note['id']!,
-                          title: note['title']!,
-                          category: note['category']!,
-                          description: note['fullDescription']!,
-                        ),
-                      ),
-                    );
-                  },
-                  isEven: index % 2 == 0,
-                );
-              },
-            ),
-          ),
+          Expanded(child: _buildNotesList()),
         ],
       ),
       bottomNavigationBar: NavBar(

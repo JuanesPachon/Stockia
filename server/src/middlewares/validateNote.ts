@@ -5,9 +5,7 @@ export const noteValidations = [
         .notEmpty()
         .withMessage('Note title is required')
         .isLength({ min: 2, max: 100 })
-        .withMessage('Note title must be between 2 and 100 characters')
-        .matches(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,-]+$/)
-        .withMessage('Note title must contain only letters, numbers, spaces and common punctuation'),
+        .withMessage('Note title must be between 2 and 100 characters'),
 
     check('description')
         .notEmpty()
