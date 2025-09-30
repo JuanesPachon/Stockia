@@ -5,9 +5,7 @@ export const providerValidations = [
         .notEmpty()
         .withMessage('Provider name is required')
         .isLength({ min: 2, max: 100 })
-        .withMessage('Provider name must be between 2 and 100 characters')
-        .matches(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,-]+$/)
-        .withMessage('Provider name must contain only letters, numbers, spaces and common punctuation'),
+        .withMessage('Provider name must be between 2 and 100 characters'),
 
     check('contact')
         .optional()
@@ -34,9 +32,7 @@ export const editProviderValidations = [
     check('name')
         .optional()
         .isLength({ min: 2, max: 100 })
-        .withMessage('Provider name must be between 2 and 100 characters')
-        .matches(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,-]+$/)
-        .withMessage('Provider name must contain only letters, numbers, spaces and common punctuation'),
+        .withMessage('Provider name must be between 2 and 100 characters'),
 
     check('contact')
         .optional()

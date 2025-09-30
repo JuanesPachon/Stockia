@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/provider_service.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/info_display_card.dart';
@@ -12,6 +13,7 @@ class ProviderDetailPage extends StatefulWidget {
   final String name;
   final String contact;
   final String category;
+  final String? categoryId;
   final String status;
   final String description;
 
@@ -21,6 +23,7 @@ class ProviderDetailPage extends StatefulWidget {
     required this.name,
     required this.contact,
     required this.category,
+    this.categoryId,
     required this.status,
     required this.description,
   });
@@ -31,6 +34,60 @@ class ProviderDetailPage extends StatefulWidget {
 
 class _ProviderDetailPageState extends State<ProviderDetailPage> {
   int _currentBottomIndex = 1;
+  final ProviderService _providerService = ProviderService();
+  bool _isLoading = false;
+
+  Future<void> _deleteProvider() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _providerService.deleteProvider(widget.id);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response.success) {
+          showCustomDialog(
+            context,
+            title: 'Proveedor eliminado exitosamente',
+            message: widget.name,
+            showSecondaryButton: false,
+            primaryButtonText: "Aceptar",
+            onPrimaryPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context, true);
+            },
+          );
+        } else {
+          String errorMessage = 'Error al eliminar el proveedor, intente nuevamente.';
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +108,7 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
         title: Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'Gestión > Proveedores > ${widget.id}',
+            'Proveedores > Detalle',
             style: const TextStyle(
               color: AppColors.mainBlue,
               fontSize: 16,
@@ -103,12 +160,12 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
                               builder: (BuildContext context) {
                                 return CustomAlertDialog(
                                   title: '¿Quieres eliminar este proveedor?',
-                                  message: '#777 - ${widget.name}',
+                                  message: widget.name,
                                   primaryButtonText: "Eliminar",
                                   secondaryButtonText: "Cancelar",
                                   onPrimaryPressed: () {
                                     Navigator.of(context).pop();
-                                    Navigator.pop(context);
+                                    _deleteProvider();
                                   },
                                   onSecondaryPressed: () => Navigator.of(context).pop(),
                                 );
@@ -122,11 +179,6 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
 
                   Column(
                     children: [
-                      InfoDisplayCard(
-                        label: 'Id:',
-                        value: widget.id,
-                      ),
-
                       InfoDisplayCard(
                         label: 'Nombre del proveedor:',
                         value: widget.name,
@@ -167,21 +219,24 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: DefaultButton(
-                text: 'Editar proveedor', 
-                onPressed: () {
-                  Navigator.push(
+                text: _isLoading ? 'Procesando...' : 'Editar proveedor', 
+                onPressed: _isLoading ? null : () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => EditProviderPage(
                         id: widget.id,
                         name: widget.name,
                         contact: widget.contact,
-                        category: widget.category,
-                        status: widget.status,
+                        categoryId: widget.categoryId,
+                        status: widget.status == 'Activo',
                         description: widget.description,
                       ),
                     ),
                   );
+                  if (result == true) {
+                    Navigator.pop(context, true);
+                  }
                 },
               ),
             ),
