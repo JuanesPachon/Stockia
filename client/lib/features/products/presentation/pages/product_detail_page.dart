@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/product_service.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/info_display_card.dart';
@@ -11,10 +12,11 @@ class ProductDetailPage extends StatefulWidget {
   final String id;
   final String name;
   final String category;
+  final String? categoryId;
   final String provider;
+  final String? providerId;
   final String stock;
   final String price;
-  final String description;
   final String imageUrl;
 
   const ProductDetailPage({
@@ -22,10 +24,11 @@ class ProductDetailPage extends StatefulWidget {
     required this.id,
     required this.name,
     required this.category,
+    this.categoryId,
     required this.provider,
+    this.providerId,
     required this.stock,
     required this.price,
-    required this.description,
     required this.imageUrl,
   });
 
@@ -35,6 +38,60 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
   int _currentBottomIndex = 1;
+  final ProductService _productService = ProductService();
+  bool _isLoading = false;
+
+  Future<void> _deleteProduct() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _productService.deleteProduct(widget.id);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response.success) {
+          showCustomDialog(
+            context,
+            title: 'Producto eliminado exitosamente',
+            message: widget.name,
+            showSecondaryButton: false,
+            primaryButtonText: "Aceptar",
+            onPrimaryPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context, true);
+            },
+          );
+        } else {
+          String errorMessage = 'Error al eliminar el producto, intente nuevamente.';
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +112,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         title: Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'Gestión > Productos > ${widget.id}',
+            'Productos > Detalle',
             style: const TextStyle(
               color: AppColors.mainBlue,
               fontSize: 16,
@@ -95,12 +152,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: AppColors.mainWhite,
-                            size: 32,
-                          ),
-                          onPressed: () {
+                          icon: _isLoading 
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainWhite),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.delete,
+                                  color: AppColors.mainWhite,
+                                  size: 32,
+                                ),
+                          onPressed: _isLoading ? null : () {
                             _showDeleteDialog();
                           },
                         ),
@@ -150,11 +216,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   Column(
                     children: [
                       InfoDisplayCard(
-                        label: 'Id:',
-                        value: widget.id,
-                      ),
-
-                      InfoDisplayCard(
                         label: 'Nombre del producto:',
                         value: widget.name,
                       ),
@@ -176,12 +237,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                       InfoDisplayCard(
                         label: 'Precio c/u:',
-                        value: widget.price,
-                      ),
-
-                      InfoDisplayCard(
-                        label: 'Descripción:',
-                        value: widget.description,
+                        value: '\$${widget.price}',
                       ),
                     ],
                   ),
@@ -199,23 +255,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: DefaultButton(
-                text: 'Editar producto', 
-                onPressed: () {
-                  Navigator.push(
+                text: _isLoading ? 'Procesando...' : 'Editar producto', 
+                onPressed: _isLoading ? null : () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => EditProductPage(
                         id: widget.id,
                         name: widget.name,
                         category: widget.category,
+                        categoryId: widget.categoryId,
                         provider: widget.provider,
+                        providerId: widget.providerId,
                         stock: widget.stock,
                         price: widget.price,
-                        description: widget.description,
                         imageUrl: widget.imageUrl,
                       ),
                     ),
                   );
+                  if (result == true) {
+                    Navigator.pop(context, true);
+                  }
                 },
               ),
             ),
@@ -251,13 +311,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       builder: (BuildContext context) {
         return CustomAlertDialog(
           title: '¿Quieres eliminar este producto?',
-          message: '#777 - ${widget.name}',
+          message: widget.name,
           primaryButtonText: "Eliminar",
           secondaryButtonText: "Cancelar",
           onPrimaryPressed: () {
             Navigator.of(context).pop();
-            Navigator.pop(context);
-            // Aquí iría la lógica de eliminación
+            _deleteProduct();
           },
           onSecondaryPressed: () => Navigator.of(context).pop(),
         );

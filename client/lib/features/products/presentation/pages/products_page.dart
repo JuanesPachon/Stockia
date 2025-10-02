@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/product_service.dart';
+import '../../../../data/services/category_service.dart';
+import '../../../../data/services/provider_service.dart';
+import '../../../../data/models/product.dart';
+import '../../../../data/models/category.dart';
+import '../../../../data/models/provider.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../widgets/product_card.dart';
@@ -16,50 +22,239 @@ class ProductsPage extends StatefulWidget {
 class _ProductsPageState extends State<ProductsPage> {
   int _currentBottomIndex = 1;
   String _selectedFilter = 'Mas recientes';
-  String _selectedCategory = 'Selecciona';
+  String? _selectedCategoryId;
+  final ProductService _productService = ProductService();
+  final CategoryService _categoryService = CategoryService();
+  final ProviderService _providerService = ProviderService();
 
-  final List<Map<String, String>> _products = [
-    {
-      'id': '#777',
-      'name': 'Empanada',
-      'category': 'Comida',
-      'provider': 'Mc Donalds',
-      'stock': '150',
-      'price': '\$100.000',
-      'imageUrl': 'assets/images/empanada.png',
-      'description': 'Empanada tradicional rellena de carne, pollo o queso, perfecta para cualquier ocasión',
-    },
-    {
-      'id': '#778',
-      'name': 'Hamburguesa',
-      'category': 'Comida',
-      'provider': 'Mc Donalds',
-      'stock': '75',
-      'price': '\$25.000',
-      'imageUrl': 'assets/images/hamburguesa.png',
-      'description': 'Hamburguesa clásica con carne de res, lechuga, tomate, cebolla y salsa especial',
-    },
-    {
-      'id': '#779',
-      'name': 'Coca Cola',
-      'category': 'Bebidas',
-      'provider': 'Coca Cola',
-      'stock': '200',
-      'price': '\$3.500',
-      'imageUrl': 'assets/images/coca_cola.png',
-      'description': 'Bebida carbonatada refrescante de 350ml, perfecta para acompañar cualquier comida',
-    },
-    {
-      'id': '#780',
-      'name': 'Papas Fritas',
-      'category': 'Comida',
-      'provider': 'Mc Donalds',
-      'stock': '120',
-      'price': '\$8.000',
-      'imageUrl': 'assets/images/papas.png',
-      'description': 'Papas fritas crujientes y doradas, sazonadas con sal marina',
-    },
-  ];
+  List<Product> _products = [];
+  List<Category> _categories = [];
+  List<Provider> _providers = [];
+  bool _isLoading = true;
+  bool _isLoadingCategories = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+    _loadProviders();
+    _loadProducts();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoadingCategories = true;
+    });
+
+    try {
+      final response = await _categoryService.getCategories();
+
+      if (mounted && response.success && response.data != null) {
+        setState(() {
+          _categories = response.data!;
+          _isLoadingCategories = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingCategories = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadProviders() async {
+    try {
+      final response = await _providerService.getProviders();
+
+      if (mounted && response.success && response.data != null) {
+        setState(() {
+          _providers = response.data!;
+        });
+      }
+    } catch (e) {
+      // Error silencioso para proveedores ya que es solo para nombres
+    }
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final order = _selectedFilter == 'Mas recientes' ? 'desc' : 'asc';
+
+      final response = await _productService.getProducts(order: order);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          if (response.success && response.data != null) {
+            List<Product> allProducts = response.data!;
+
+            if (_selectedCategoryId != null &&
+                _selectedCategoryId!.isNotEmpty) {
+              _products = allProducts
+                  .where((product) => product.categoryId == _selectedCategoryId)
+                  .toList();
+            } else {
+              _products = allProducts;
+            }
+          } else {
+            _errorMessage = response.error ?? 'Error al cargar productos';
+            _products = [];
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Error inesperado: $e';
+          _products = [];
+        });
+      }
+    }
+  }
+
+  String _getCategoryName(String? categoryId) {
+    if (categoryId == null || categoryId.isEmpty) return 'Sin categoría';
+
+    final category = _categories.firstWhere(
+      (cat) => cat.id == categoryId,
+      orElse: () => Category(
+        id: '',
+        userId: '',
+        name: 'Categoría desconocida',
+        createdAt: DateTime.now(),
+      ),
+    );
+    return category.name;
+  }
+
+  String _getProviderName(String? providerId) {
+    if (providerId == null || providerId.isEmpty) return 'Sin proveedor';
+
+    final provider = _providers.firstWhere(
+      (prov) => prov.id == providerId,
+      orElse: () => Provider(
+        id: '',
+        userId: '',
+        name: 'Proveedor desconocido',
+        status: true,
+        createdAt: DateTime.now(),
+      ),
+    );
+    return provider.name;
+  }
+
+  Widget _buildProductsList() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainBlue),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.red[800], fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadProducts,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.mainBlue,
+                foregroundColor: AppColors.mainWhite,
+              ),
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_products.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inventory_outlined, size: 64, color: AppColors.mainBlue),
+            SizedBox(height: 16),
+            Text(
+              'No hay productos disponibles',
+              style: TextStyle(
+                color: AppColors.mainBlue,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Agrega un producto o cambia el filtro.',
+              style: TextStyle(color: AppColors.mainBlue, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: _products.length,
+      itemBuilder: (context, index) {
+        final product = _products[index];
+        return ProductCard(
+          id: product.id,
+          name: product.name,
+          category: _getCategoryName(product.categoryId),
+          stock: product.stock.toString(),
+          price: '\$${product.price.toStringAsFixed(0)}',
+          imageUrl: product.imageUrl ?? 'assets/images/default_product.png',
+          onDetailsPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetailPage(
+                  id: product.id,
+                  name: product.name,
+                  category: _getCategoryName(product.categoryId),
+                  categoryId: product.categoryId,
+                  provider: _getProviderName(product.providerId),
+                  providerId: product.providerId,
+                  stock: product.stock.toString(),
+                  price: product.price.toString(),
+                  imageUrl: product.imageUrl ?? 'assets/images/default_product.png',
+                ),
+              ),
+            );
+            if (result == true) {
+              _loadProducts();
+            }
+          },
+          isEven: index % 2 == 0,
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,8 +288,11 @@ class _ProductsPageState extends State<ProductsPage> {
             padding: const EdgeInsets.all(20),
             child: DefaultButton(
               text: 'Agregar producto', 
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.addProduct);
+              onPressed: () async {
+                final result = await Navigator.pushNamed(context, AppRoutes.addProduct);
+                if (result == true) {
+                  _loadProducts();
+                }
               }
             ),
           ),
@@ -146,6 +344,7 @@ class _ProductsPageState extends State<ProductsPage> {
                             setState(() {
                               _selectedFilter = newValue;
                             });
+                            _loadProducts();
                           }
                         },
                         dropdownColor: AppColors.mainBlue,
@@ -172,48 +371,50 @@ class _ProductsPageState extends State<ProductsPage> {
 
                       const Spacer(),
 
-                      DropdownButton<String>(
-                        value: _selectedCategory,
-                        underline: const SizedBox(),
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: AppColors.mainWhite,
-                        ),
-                        style: const TextStyle(
-                          color: AppColors.mainWhite,
-                          fontSize: 14,
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Selecciona',
-                            child: Text('Selecciona'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Comida',
-                            child: Text('Comida'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Bebidas',
-                            child: Text('Bebidas'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Limpieza',
-                            child: Text('Limpieza'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Electrónicos',
-                            child: Text('Electrónicos'),
-                          ),
-                        ],
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _selectedCategory = newValue;
-                            });
-                          }
-                        },
-                        dropdownColor: AppColors.mainBlue,
-                      ),
+                      _isLoadingCategories
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainWhite),
+                              ),
+                            )
+                          : DropdownButton<String>(
+                              value: _selectedCategoryId,
+                              underline: const SizedBox(),
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: AppColors.mainWhite,
+                              ),
+                              style: const TextStyle(
+                                color: AppColors.mainWhite,
+                                fontSize: 14,
+                              ),
+                              hint: const Text(
+                                'Todas',
+                                style: TextStyle(color: AppColors.mainWhite),
+                              ),
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  child: Text('Todas las categorías', style: TextStyle(color: AppColors.mainWhite)),
+                                ),
+                                ..._categories.map<DropdownMenuItem<String>>((Category category) {
+                                  return DropdownMenuItem<String>(
+                                    value: category.id,
+                                    child: Text(category.name, style: const TextStyle(color: AppColors.mainWhite)),
+                                  );
+                                }),
+                              ],
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedCategoryId = newValue;
+                                });
+                                _loadProducts();
+                              },
+                              dropdownColor: AppColors.mainBlue,
+                            ),
                     ],
                   ),
 
@@ -225,40 +426,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
           const Divider(color: AppColors.mainBlue, thickness: 2, height: 0),
 
-          Expanded(
-            child: ListView.builder(
-              itemCount: _products.length,
-              itemBuilder: (context, index) {
-                final product = _products[index];
-                return ProductCard(
-                  id: product['id']!,
-                  name: product['name']!,
-                  category: product['category']!,
-                  stock: product['stock']!,
-                  price: product['price']!,
-                  imageUrl: product['imageUrl']!,
-                  onDetailsPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProductDetailPage(
-                          id: product['id']!,
-                          name: product['name']!,
-                          category: product['category']!,
-                          provider: product['provider']!,
-                          stock: product['stock']!,
-                          price: product['price']!,
-                          description: product['description']!,
-                          imageUrl: product['imageUrl']!,
-                        ),
-                      ),
-                    );
-                  },
-                  isEven: index % 2 == 0,
-                );
-              },
-            ),
-          ),
+          Expanded(child: _buildProductsList()),
         ],
       ),
       bottomNavigationBar: NavBar(

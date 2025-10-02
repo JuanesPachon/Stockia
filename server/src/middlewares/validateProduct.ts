@@ -5,9 +5,7 @@ export const productValidations = [
         .notEmpty()
         .withMessage('Product name is required')
         .isLength({ min: 2, max: 100 })
-        .withMessage('Product name must be between 2 and 100 characters')
-        .matches(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\-.,()&]+$/)
-        .withMessage('Product name contains invalid characters'),
+        .withMessage('Product name must be between 2 and 100 characters'),
 
     check('categoryId')
         .optional({ nullable: true })
@@ -47,9 +45,7 @@ export const editProductValidations = [
     check('name')
         .optional()
         .isLength({ min: 2, max: 100 })
-        .withMessage('Product name must be between 2 and 100 characters')
-        .matches(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\-.,()&]+$/)
-        .withMessage('Product name contains invalid characters'),
+        .withMessage('Product name must be between 2 and 100 characters'),
 
     check('categoryId')
         .optional({ nullable: true })
