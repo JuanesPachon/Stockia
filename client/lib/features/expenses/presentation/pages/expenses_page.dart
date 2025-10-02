@@ -9,6 +9,7 @@ import '../../../../data/models/category.dart';
 import '../../../../data/models/provider.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../widgets/expense_card.dart';
 import 'expense_detail_page.dart';
 
@@ -236,7 +237,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
           description: expense.description.length > 50
               ? '${expense.description.substring(0, 50)}...'
               : expense.description,
-          amount: '\$${expense.amount.toStringAsFixed(0)}',
+          amount: CurrencyFormatter.formatCOP(expense.amount),
           date: '${expense.createdAt.day.toString().padLeft(2, '0')}-${expense.createdAt.month.toString().padLeft(2, '0')}-${expense.createdAt.year}',
           onDetailsPressed: () async {
             final result = await Navigator.push(
@@ -247,7 +248,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
                   title: expense.title,
                   category: _getCategoryName(expense.categoryId),
                   categoryId: expense.categoryId,
-                  amount: '\$${expense.amount.toStringAsFixed(0)}',
+                  amount: CurrencyFormatter.formatCOP(expense.amount),
                   providerId: expense.providerId,
                   provider: _getProviderName(expense.providerId),
                   description: expense.description,

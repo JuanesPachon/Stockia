@@ -1,3 +1,4 @@
+import 'package:client/core/utils/currency_formatter.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
@@ -130,7 +131,7 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
 
                       InfoDisplayCard(
                         label: 'Total:',
-                        value: '\$${widget.sale.total.toStringAsFixed(0)}',
+                        value: CurrencyFormatter.formatCOP(widget.sale.total),
                       ),
                     ],
                   ),
@@ -291,7 +292,7 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                               const SizedBox(height: 4),
 
                               Text(
-                                'Precio c/u: \$${product.price.toStringAsFixed(0)}',
+                                'Precio c/u: ${CurrencyFormatter.formatCOP(product.price)}',
                                 style: const TextStyle(
                                   color: AppColors.mainBlue,
                                   fontSize: 14,

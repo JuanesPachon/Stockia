@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/currency_formatter.dart';
 
 class ProductSaleCard extends StatelessWidget {
   final String name;
@@ -91,7 +92,7 @@ class ProductSaleCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 
                 Text(
-                  'Precio c/u: \$${price.toStringAsFixed(0)}',
+                  'Precio c/u: ${CurrencyFormatter.formatCOP(price)}',
                   style: const TextStyle(
                     color: AppColors.mainBlue,
                     fontSize: 18,

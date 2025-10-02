@@ -5,6 +5,7 @@ import '../../../../data/services/sale_service.dart';
 import '../../../../data/models/sale.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../widgets/sales_card.dart';
 import 'sale_detail_page.dart';
 
@@ -144,7 +145,7 @@ class _SalesPageState extends State<SalesPage> {
           id: '#${sale.id.substring(sale.id.length - 6)}',
           date: _formatDate(sale.createdAt),
           productsInfo: _getProductsInfo(sale.products),
-          total: '\$${sale.total.toStringAsFixed(0)}',
+          total: CurrencyFormatter.formatCOP(sale.total),
           onDetailsPressed: () {
             Navigator.push(
               context,

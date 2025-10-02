@@ -10,6 +10,7 @@ import '../../../../data/services/sale_service.dart';
 import '../../../../data/models/product.dart';
 import '../../../../data/models/category.dart';
 import '../../../../data/models/sale/create_sale_request.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../widgets/product_sale_card.dart';
 
 class AddSalePage extends StatefulWidget {
@@ -208,7 +209,7 @@ class _AddSalePageState extends State<AddSalePage> {
           showCustomDialog(
             context,
             title: 'Se ha agregado la venta:',
-            message: 'Total: \$${sale.total.toStringAsFixed(0)}',
+            message: 'Total: ${CurrencyFormatter.formatCOP(sale.total)}',
             showSecondaryButton: false,
             primaryButtonText: "Aceptar",
             onPrimaryPressed: () {
@@ -520,7 +521,7 @@ class _AddSalePageState extends State<AddSalePage> {
                       ),
                     ),
                     Text(
-                      '\$${total.toStringAsFixed(0)}',
+                      CurrencyFormatter.formatCOP(total),
                       style: const TextStyle(
                         color: AppColors.mainBlue,
                         fontSize: 20,

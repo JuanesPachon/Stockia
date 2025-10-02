@@ -9,6 +9,7 @@ import '../../../../data/models/category.dart';
 import '../../../../data/models/provider.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../widgets/product_card.dart';
 import 'product_detail_page.dart';
 
@@ -227,7 +228,7 @@ class _ProductsPageState extends State<ProductsPage> {
           name: product.name,
           category: _getCategoryName(product.categoryId),
           stock: product.stock.toString(),
-          price: '\$${product.price.toStringAsFixed(0)}',
+          price: CurrencyFormatter.formatCOP(product.price),
           imageUrl: product.imageUrl ?? 'assets/images/default_product.png',
           onDetailsPressed: () async {
             final result = await Navigator.push(

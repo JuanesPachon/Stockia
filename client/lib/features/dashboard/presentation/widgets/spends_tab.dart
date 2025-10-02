@@ -4,6 +4,7 @@ import '../../../../data/services/expense_service.dart';
 import '../../../../data/services/category_service.dart';
 import '../../../../data/models/expense.dart';
 import '../../../../data/models/category.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import 'stat_card.dart';
 import 'top_list_card.dart';
 import 'items_list_card.dart';
@@ -127,7 +128,7 @@ class _GastosTabState extends State<GastosTab> {
     _topCategories = sortedCategories.take(3).map((e) => e.key).toList();
     
     _latestExpenses = filteredExpenses.take(3).map((expense) => {
-      'Gasto #${expense.id.substring(expense.id.length - 3)}': '\$${expense.amount.toStringAsFixed(0)}'
+      'Gasto #${expense.id.substring(expense.id.length - 3)}': CurrencyFormatter.formatCOP(expense.amount)
     }).toList();
     
     if (_selectedCategoryId != null) {
@@ -224,7 +225,7 @@ class _GastosTabState extends State<GastosTab> {
       ],
       stats: [
         {'Cantidad de gastos:': '$_selectedCategoryCount'},
-        {'Dinero en gastos:': '\$${_selectedCategoryAmount.toStringAsFixed(0)}'},
+        {'Dinero en gastos:': CurrencyFormatter.formatCOP(_selectedCategoryAmount)},
       ],
     );
   }
@@ -250,7 +251,7 @@ class _GastosTabState extends State<GastosTab> {
           ),
           StatCard(
             label: 'Total dinero en gastos:', 
-            value: '\$${_totalAmount.toStringAsFixed(0)}', 
+            value: CurrencyFormatter.formatCOP(_totalAmount), 
             isEven: true
           ),
 
@@ -263,7 +264,7 @@ class _GastosTabState extends State<GastosTab> {
 
           ItemListCard(
             title: 'Últimos gastos:',
-            items: _latestExpenses.isEmpty ? [{'Sin gastos': '\$0'}] : _latestExpenses,
+            items: _latestExpenses.isEmpty ? [{'Sin gastos': CurrencyFormatter.formatCOPFromInt(0)}] : _latestExpenses,
           ),
 
           _buildDetailCard(),

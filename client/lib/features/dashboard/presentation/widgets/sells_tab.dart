@@ -7,6 +7,7 @@ import '../../../../data/services/category_service.dart';
 import '../../../../data/models/sale.dart';
 import '../../../../data/models/product.dart';
 import '../../../../data/models/category.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import 'stat_card.dart';
 import 'items_list_card.dart';
 import 'detail_card.dart';
@@ -163,7 +164,7 @@ class _VentasTabState extends State<VentasTab> {
     _topProducts = sortedProducts.take(3).map((e) => e.key).toList();
     
     _latestSales = filteredSales.take(3).map((sale) => {
-      'Venta #${sale.id.substring(sale.id.length - 3)}': '\$${sale.total.toStringAsFixed(0)}'
+      'Venta #${sale.id.substring(sale.id.length - 3)}': CurrencyFormatter.formatCOP(sale.total)
     }).toList();
     
     if (_selectedProductId != null) {
@@ -308,7 +309,7 @@ class _VentasTabState extends State<VentasTab> {
       ],
       stats: [
         {'Unidades vendidas:': '$_selectedProductUnits'},
-        {'Total dinero en ventas:': '\$${_selectedProductRevenue.toStringAsFixed(0)}'},
+        {'Total dinero en ventas:': CurrencyFormatter.formatCOP(_selectedProductRevenue)},
       ],
     );
   }
@@ -356,7 +357,7 @@ class _VentasTabState extends State<VentasTab> {
       ],
       stats: [
         {'Unidades vendidas:': '$_selectedCategoryUnits'},
-        {'Dinero en ventas:': '\$${_selectedCategoryRevenue.toStringAsFixed(0)}'},
+        {'Dinero en ventas:': CurrencyFormatter.formatCOP(_selectedCategoryRevenue)},
       ],
     );
   }
@@ -382,7 +383,7 @@ class _VentasTabState extends State<VentasTab> {
           ),
           StatCard(
             label: 'Total dinero en ventas:', 
-            value: '\$${_totalRevenue.toStringAsFixed(0)}', 
+            value: CurrencyFormatter.formatCOP(_totalRevenue), 
             isEven: true
           ),
 
@@ -395,7 +396,7 @@ class _VentasTabState extends State<VentasTab> {
 
           ItemListCard(
             title: 'Últimas ventas:',
-            items: _latestSales.isEmpty ? [{'Sin ventas': '\$0'}] : _latestSales,
+            items: _latestSales.isEmpty ? [{'Sin ventas': CurrencyFormatter.formatCOPFromInt(0)}] : _latestSales,
           ),
 
           _buildDetailCard(),
