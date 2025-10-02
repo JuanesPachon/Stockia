@@ -157,7 +157,7 @@ const createSale = async (saleData: ISale, userId: string): Promise<ICreateAndEd
         }
 
         for (const item of saleData.products) {
-            const existingProduct = await Product.exists({
+            const existingProduct = await Product.findOne({
                 _id: item.productId,
                 userId: userId,
                 deletedAt: null,
@@ -170,6 +170,27 @@ const createSale = async (saleData: ISale, userId: string): Promise<ICreateAndEd
                     message: 'One or more products not found or do not belong to the user',
                 };
             }
+
+            if (existingProduct.stock < item.quantity) {
+                return {
+                    success: false,
+                    error: 'insufficient_stock',
+                    message: `Insufficient stock for product ${existingProduct.name}. Available: ${existingProduct.stock}, Required: ${item.quantity}`,
+                };
+            }
+        }
+
+        for (const item of saleData.products) {
+            await Product.findOneAndUpdate(
+                {
+                    _id: item.productId,
+                    userId: userId,
+                    deletedAt: null,
+                },
+                {
+                    $inc: { stock: -item.quantity }
+                }
+            );
         }
 
         const newSale = {

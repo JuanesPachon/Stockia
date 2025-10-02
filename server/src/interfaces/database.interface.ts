@@ -19,7 +19,7 @@ export interface IGetResult {
 }
 export interface ICreateAndEditResult {
     success: boolean;
-    error?: 'not_found' | 'duplicate' | 'server';
+    error?: 'not_found' | 'duplicate' | 'server' | 'insufficient_stock';
     message?: string;
     data?: object;
 }

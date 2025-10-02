@@ -3,20 +3,14 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/info_display_card.dart';
+import '../../../../data/models/sale.dart';
+import '../../../../data/models/product.dart';
+import '../../../../data/services/product_service.dart';
 
 class SaleDetailPage extends StatefulWidget {
-  final String id;
-  final String date;
-  final String total;
-  final List<Map<String, String>> products;
+  final Sale sale;
 
-  const SaleDetailPage({
-    super.key,
-    required this.id,
-    required this.date,
-    required this.total,
-    required this.products,
-  });
+  const SaleDetailPage({super.key, required this.sale});
 
   @override
   State<SaleDetailPage> createState() => _SaleDetailPageState();
@@ -24,6 +18,49 @@ class SaleDetailPage extends StatefulWidget {
 
 class _SaleDetailPageState extends State<SaleDetailPage> {
   int _currentBottomIndex = 1;
+  final ProductService _productService = ProductService();
+  Map<String, Product> _updatedProducts = {};
+  bool _isLoadingProducts = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUpdatedProducts();
+  }
+
+  Future<void> _loadUpdatedProducts() async {
+    setState(() {
+      _isLoadingProducts = true;
+    });
+
+    try {
+      final response = await _productService.getProducts();
+
+      if (mounted && response.success && response.data != null) {
+        final Map<String, Product> productMap = {};
+        for (var product in response.data!) {
+          productMap[product.id] = product;
+        }
+
+        setState(() {
+          _updatedProducts = productMap;
+          _isLoadingProducts = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingProducts = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingProducts = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +81,7 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
         title: Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'Gestión > Ventas > ${widget.id}',
+            'Ventas > Detalle',
             style: const TextStyle(
               color: AppColors.mainBlue,
               fontSize: 16,
@@ -74,7 +111,7 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                       ),
                     ),
                     child: Text(
-                      'Venta ${widget.id}:',
+                      'Venta #${widget.sale.id.substring(widget.sale.id.length - 6)}:',
                       style: const TextStyle(
                         color: AppColors.mainWhite,
                         fontSize: 18,
@@ -87,12 +124,13 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                     children: [
                       InfoDisplayCard(
                         label: 'Fecha venta:',
-                        value: widget.date,
+                        value:
+                            '${widget.sale.createdAt.day}/${widget.sale.createdAt.month}/${widget.sale.createdAt.year}',
                       ),
 
                       InfoDisplayCard(
                         label: 'Total:',
-                        value: widget.total,
+                        value: '\$${widget.sale.total.toStringAsFixed(0)}',
                       ),
                     ],
                   ),
@@ -120,16 +158,25 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                     ),
                   ),
 
-                  ...widget.products.asMap().entries.map((entry) {
+                  ...widget.sale.products.asMap().entries.map((entry) {
                     int index = entry.key;
-                    Map<String, String> product = entry.value;
-                    
+                    var saleProduct = entry.value;
+                    var product = saleProduct.product;
+
+                    var updatedProduct =
+                        _updatedProducts[product.id] ?? product;
+
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: index % 2 == 0 ? AppColors.mainWhite : AppColors.mainBlue.withValues(alpha: 0.1),
+                        color: index % 2 == 0
+                            ? AppColors.mainWhite
+                            : AppColors.mainBlue.withValues(alpha: 0.1),
                         border: const Border(
-                          bottom: BorderSide(color: AppColors.mainBlue, width: 1),
+                          bottom: BorderSide(
+                            color: AppColors.mainBlue,
+                            width: 1,
+                          ),
                         ),
                       ),
                       child: Row(
@@ -139,36 +186,51 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                             height: 60,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.mainBlue, width: 1),
+                              border: Border.all(
+                                color: AppColors.mainBlue,
+                                width: 1,
+                              ),
                               color: Colors.orange.shade300,
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.asset(
-                                product['imageUrl'] ?? 'assets/images/default.png',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: Colors.orange.shade300,
-                                    child: const Icon(
-                                      Icons.fastfood,
-                                      color: Colors.white,
-                                      size: 30,
+                              child:
+                                  updatedProduct.imageUrl != null &&
+                                      updatedProduct.imageUrl!.isNotEmpty
+                                  ? Image.network(
+                                      updatedProduct.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return Container(
+                                              color: Colors.orange.shade300,
+                                              child: const Icon(
+                                                Icons.fastfood,
+                                                color: Colors.white,
+                                                size: 30,
+                                              ),
+                                            );
+                                          },
+                                    )
+                                  : Container(
+                                      color: Colors.orange.shade300,
+                                      child: const Icon(
+                                        Icons.fastfood,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
                                     ),
-                                  );
-                                },
-                              ),
                             ),
                           ),
-                          
+
                           const SizedBox(width: 16),
-                          
+
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  product['name'] ?? 'Producto',
+                                  updatedProduct.name,
                                   style: const TextStyle(
                                     color: AppColors.mainBlue,
                                     fontSize: 16,
@@ -176,37 +238,60 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                
+
                                 const SizedBox(height: 4),
-                                
-                                Text(
-                                  'Stock: ${product['stock'] ?? '0'}',
-                                  style: const TextStyle(
-                                    color: AppColors.mainBlue,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                  ),
+
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Stock actual: ',
+                                      style: const TextStyle(
+                                        color: AppColors.mainBlue,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    _isLoadingProducts
+                                        ? const SizedBox(
+                                            height: 12,
+                                            width: 12,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: AppColors.mainBlue,
+                                            ),
+                                          )
+                                        : Text(
+                                            '${updatedProduct.stock}',
+                                            style: TextStyle(
+                                              color: updatedProduct.stock > 0
+                                                  ? AppColors.mainBlue
+                                                  : Colors.red,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
-                          
+
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                'Cantidad: ${product['quantity'] ?? '0'}',
+                                'Cantidad: ${saleProduct.quantity}',
                                 style: const TextStyle(
                                   color: AppColors.mainBlue,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              
+
                               const SizedBox(height: 4),
-                              
+
                               Text(
-                                'Precio c/u: ${product['pricePerUnit'] ?? '\$0'}',
+                                'Precio c/u: \$${product.price.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: AppColors.mainBlue,
                                   fontSize: 14,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/sale_service.dart';
+import '../../../../data/models/sale.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../widgets/sales_card.dart';
@@ -16,104 +18,148 @@ class SalesPage extends StatefulWidget {
 class _SalesPageState extends State<SalesPage> {
   int _currentBottomIndex = 1;
   String _selectedFilter = 'Mas recientes';
+  final SaleService _saleService = SaleService();
 
-  final List<Map<String, dynamic>> _sales = [
-    {
-      'id': '#290',
-      'date': '28-08-2025',
-      'productsInfo': 'Café, Empanada + 4 productos...',
-      'total': '\$100.000',
-      'products': [
-        {
-          'name': 'Empanada',
-          'quantity': '2',
-          'stock': '13',
-          'pricePerUnit': '\$1.000',
-          'imageUrl': 'assets/images/empanada.png',
-        },
-        {
-          'name': 'Café',
-          'quantity': '3',
-          'stock': '25',
-          'pricePerUnit': '\$2.500',
-          'imageUrl': 'assets/images/cafe.png',
-        },
-        {
-          'name': 'Coca Cola',
-          'quantity': '2',
-          'stock': '50',
-          'pricePerUnit': '\$3.500',
-          'imageUrl': 'assets/images/coca_cola.png',
-        },
-      ],
-    },
-    {
-      'id': '#289',
-      'date': '28-08-2025',
-      'productsInfo': 'Café, Empanada + 4 productos...',
-      'total': '\$84.000',
-      'products': [
-        {
-          'name': 'Empanada',
-          'quantity': '1',
-          'stock': '13',
-          'pricePerUnit': '\$1.000',
-          'imageUrl': 'assets/images/empanada.png',
-        },
-        {
-          'name': 'Hamburguesa',
-          'quantity': '2',
-          'stock': '8',
-          'pricePerUnit': '\$25.000',
-          'imageUrl': 'assets/images/hamburguesa.png',
-        },
-      ],
-    },
-    {
-      'id': '#291',
-      'date': '28-08-2025',
-      'productsInfo': 'Café, Empanada + 4 productos...',
-      'total': '\$1.000.000',
-      'products': [
-        {
-          'name': 'Empanada',
-          'quantity': '5',
-          'stock': '13',
-          'pricePerUnit': '\$1.000',
-          'imageUrl': 'assets/images/empanada.png',
-        },
-        {
-          'name': 'Papas Fritas',
-          'quantity': '3',
-          'stock': '20',
-          'pricePerUnit': '\$8.000',
-          'imageUrl': 'assets/images/papas.png',
-        },
-      ],
-    },
-    {
-      'id': '#292',
-      'date': '27-08-2025',
-      'productsInfo': 'Café, Empanada + 2 productos...',
-      'total': '\$45.500',
-      'products': [
-        {
-          'name': 'Coca Cola',
-          'quantity': '4',
-          'stock': '50',
-          'pricePerUnit': '\$3.500',
-          'imageUrl': 'assets/images/coca_cola.png',
-        },
-        {
-          'name': 'Café',
-          'quantity': '6',
-          'stock': '25',
-          'pricePerUnit': '\$2.500',
-          'imageUrl': 'assets/images/cafe.png',
-        },
-      ],
-    },
-  ];
+  List<Sale> _sales = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSales();
+  }
+
+  Future<void> _loadSales() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final order = _selectedFilter == 'Mas recientes' ? 'desc' : 'asc';
+      final response = await _saleService.getSales(order: order);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          if (response.success && response.data != null) {
+            _sales = response.data!;
+          } else {
+            _errorMessage = response.error ?? 'Error al cargar ventas';
+            _sales = [];
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Error inesperado: $e';
+          _sales = [];
+        });
+      }
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
+  }
+
+  String _getProductsInfo(List<SaleProductItem> products) {
+    if (products.isEmpty) return 'Sin productos';
+    
+    if (products.length == 1) {
+      return '${products.length} producto';
+    }
+    
+    return '${products.length} productos';
+  }
+
+  Widget _buildSalesList() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainBlue),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[800]),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.red[800], fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _loadSales(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.mainBlue,
+                foregroundColor: AppColors.mainWhite,
+              ),
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_sales.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.receipt_outlined, size: 64, color: AppColors.mainBlue),
+            SizedBox(height: 16),
+            Text(
+              'No hay ventas registradas',
+              style: TextStyle(
+                color: AppColors.mainBlue,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Agrega tu primera venta.',
+              style: TextStyle(color: AppColors.mainBlue, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: _sales.length,
+      itemBuilder: (context, index) {
+        final sale = _sales[index];
+        return SalesCard(
+          id: '#${sale.id.substring(sale.id.length - 6)}',
+          date: _formatDate(sale.createdAt),
+          productsInfo: _getProductsInfo(sale.products),
+          total: '\$${sale.total.toStringAsFixed(0)}',
+          onDetailsPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SaleDetailPage(
+                  sale: sale,
+                ),
+              ),
+            );
+          },
+          isEven: index % 2 == 0,
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,8 +193,11 @@ class _SalesPageState extends State<SalesPage> {
             padding: const EdgeInsets.all(20),
             child: DefaultButton(
               text: 'Agregar venta', 
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.addSale);
+              onPressed: () async {
+                final result = await Navigator.pushNamed(context, AppRoutes.addSale);
+                if (result == true) {
+                  _loadSales();
+                }
               }
             ),
           ),
@@ -158,7 +207,7 @@ class _SalesPageState extends State<SalesPage> {
           Container(
             decoration: const BoxDecoration(color: AppColors.mainBlue),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
               child: Row(
                 children: [
                   const Text(
@@ -198,6 +247,7 @@ class _SalesPageState extends State<SalesPage> {
                         setState(() {
                           _selectedFilter = newValue;
                         });
+                        _loadSales();
                       }
                     },
                     dropdownColor: AppColors.mainBlue,
@@ -209,36 +259,7 @@ class _SalesPageState extends State<SalesPage> {
 
           const Divider(color: AppColors.mainBlue, thickness: 2, height: 0),
 
-          Expanded(
-            child: ListView.builder(
-              itemCount: _sales.length,
-              itemBuilder: (context, index) {
-                final sale = _sales[index];
-                return SalesCard(
-                  id: sale['id']!,
-                  date: sale['date']!,
-                  productsInfo: sale['productsInfo']!,
-                  total: sale['total']!,
-                  onDetailsPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SaleDetailPage(
-                          id: sale['id']!,
-                          date: sale['date']!,
-                          total: sale['total']!,
-                          products: List<Map<String, String>>.from(
-                            sale['products'].map((product) => Map<String, String>.from(product))
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  isEven: index % 2 == 0,
-                );
-              },
-            ),
-          ),
+          Expanded(child: _buildSalesList()),
         ],
       ),
       bottomNavigationBar: NavBar(
