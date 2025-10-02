@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/expense_service.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/info_display_card.dart';
@@ -11,7 +12,9 @@ class ExpenseDetailPage extends StatefulWidget {
   final String id;
   final String title;
   final String category;
+  final String? categoryId;
   final String amount;
+  final String? providerId;
   final String provider;
   final String description;
 
@@ -20,7 +23,9 @@ class ExpenseDetailPage extends StatefulWidget {
     required this.id,
     required this.title,
     required this.category,
+    this.categoryId,
     required this.amount,
+    this.providerId,
     required this.provider,
     required this.description,
   });
@@ -31,6 +36,60 @@ class ExpenseDetailPage extends StatefulWidget {
 
 class _ExpenseDetailPageState extends State<ExpenseDetailPage> {
   int _currentBottomIndex = 1;
+  final ExpenseService _expenseService = ExpenseService();
+  bool _isLoading = false;
+
+  Future<void> _deleteExpense() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _expenseService.deleteExpense(widget.id);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response.success) {
+          showCustomDialog(
+            context,
+            title: 'Gasto eliminado exitosamente',
+            message: widget.title,
+            showSecondaryButton: false,
+            primaryButtonText: "Aceptar",
+            onPrimaryPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context, true);
+            },
+          );
+        } else {
+          String errorMessage = 'Error al eliminar el gasto, intente nuevamente.';
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +110,7 @@ class _ExpenseDetailPageState extends State<ExpenseDetailPage> {
         title: Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'Gestión > Gasto > ${widget.id}',
+            'Gastos > Detalle',
             style: const TextStyle(
               color: AppColors.mainBlue,
               fontSize: 16,
@@ -91,12 +150,21 @@ class _ExpenseDetailPageState extends State<ExpenseDetailPage> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: AppColors.mainWhite,
-                            size: 32,
-                          ),
-                          onPressed: () {
+                          icon: _isLoading 
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainWhite),
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.delete,
+                                  color: AppColors.mainWhite,
+                                  size: 32,
+                                ),
+                          onPressed: _isLoading ? null : () {
                             _showDeleteDialog();
                           },
                         ),
@@ -106,11 +174,6 @@ class _ExpenseDetailPageState extends State<ExpenseDetailPage> {
 
                   Column(
                     children: [
-                      InfoDisplayCard(
-                        label: 'Id:',
-                        value: widget.id,
-                      ),
-
                       InfoDisplayCard(
                         label: 'Título del gasto:',
                         value: widget.title,
@@ -151,21 +214,24 @@ class _ExpenseDetailPageState extends State<ExpenseDetailPage> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: DefaultButton(
-                text: 'Editar gasto', 
-                onPressed: () {
-                  Navigator.push(
+                text: _isLoading ? 'Procesando...' : 'Editar gasto', 
+                onPressed: _isLoading ? null : () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => EditExpensePage(
                         id: widget.id,
                         title: widget.title,
-                        category: widget.category,
-                        amount: widget.amount,
-                        provider: widget.provider,
+                        categoryId: widget.categoryId,
+                        amount: double.tryParse(widget.amount.replaceAll('\$', '').replaceAll(',', '').replaceAll('.', '')) ?? 0.0,
+                        providerId: widget.providerId,
                         description: widget.description,
                       ),
                     ),
                   );
+                  if (result == true) {
+                    Navigator.pop(context, true);
+                  }
                 },
               ),
             ),
@@ -201,13 +267,12 @@ class _ExpenseDetailPageState extends State<ExpenseDetailPage> {
       builder: (BuildContext context) {
         return CustomAlertDialog(
           title: '¿Quieres eliminar este gasto?',
-          message: '#777 - ${widget.title}',
+          message: widget.title,
           primaryButtonText: "Eliminar",
           secondaryButtonText: "Cancelar",
           onPrimaryPressed: () {
             Navigator.of(context).pop();
-            Navigator.pop(context);
-            // Aquí iría la lógica de eliminación
+            _deleteExpense();
           },
           onSecondaryPressed: () => Navigator.of(context).pop(),
         );

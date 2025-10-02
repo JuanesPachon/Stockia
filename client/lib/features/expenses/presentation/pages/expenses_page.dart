@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/expense_service.dart';
+import '../../../../data/services/category_service.dart';
+import '../../../../data/services/provider_service.dart';
+import '../../../../data/models/expense.dart';
+import '../../../../data/models/category.dart';
+import '../../../../data/models/provider.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../widgets/expense_card.dart';
@@ -16,50 +22,247 @@ class ExpensesPage extends StatefulWidget {
 class _ExpensesPageState extends State<ExpensesPage> {
   int _currentBottomIndex = 1;
   String _selectedFilter = 'Mas recientes';
-  String _selectedCategory = 'Selecciona';
+  String? _selectedCategoryId;
+  final ExpenseService _expenseService = ExpenseService();
+  final CategoryService _categoryService = CategoryService();
+  final ProviderService _providerService = ProviderService();
 
-  final List<Map<String, String>> _expenses = [
-    {
-      'id': '#12',
-      'title': 'Materia prima',
-      'description': 'Se compraron 15 bultos de...',
-      'category': 'Comida',
-      'amount': '\$150.500',
-      'date': '28-08-2025',
-      'provider': 'Mc Donalds',
-      'fullDescription': 'Se compraron 15 bultos de maíz molido para poder desarrollar los productos.',
-    },
-    {
-      'id': '#13',
-      'title': 'Insumos oficina',
-      'description': 'Compra de material de oficina...',
-      'category': 'Oficina',
-      'amount': '\$75.200',
-      'date': '27-08-2025',
-      'provider': 'TechStore',
-      'fullDescription': 'Compra de material de oficina para el funcionamiento diario de la empresa.',
-    },
-    {
-      'id': '#14',
-      'title': 'Productos de limpieza',
-      'description': 'Adquisición de productos de aseo...',
-      'category': 'Limpieza',
-      'amount': '\$45.800',
-      'date': '26-08-2025',
-      'provider': 'Limpieza Total',
-      'fullDescription': 'Adquisición de productos de aseo y limpieza para mantener las instalaciones.',
-    },
-    {
-      'id': '#15',
-      'title': 'Bebidas para evento',
-      'description': 'Compra de bebidas para evento...',
-      'category': 'Bebidas',
-      'amount': '\$120.300',
-      'date': '25-08-2025',
-      'provider': 'Coca Cola',
-      'fullDescription': 'Compra de bebidas para evento corporativo del mes de agosto.',
-    },
-  ];
+  List<Expense> _expenses = [];
+  List<Category> _categories = [];
+  List<Provider> _providers = [];
+  bool _isLoading = true;
+  bool _isLoadingCategories = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+    _loadProviders();
+    _loadExpenses();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoadingCategories = true;
+    });
+
+    try {
+      final response = await _categoryService.getCategories();
+
+      if (mounted && response.success && response.data != null) {
+        setState(() {
+          _categories = response.data!;
+          _isLoadingCategories = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingCategories = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadProviders() async {
+    try {
+      final response = await _providerService.getProviders();
+
+      if (mounted && response.success && response.data != null) {
+        setState(() {
+          _providers = response.data!;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _providers = [];
+        });
+      }
+    }
+  }
+
+  Future<void> _loadExpenses() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final order = _selectedFilter == 'Mas recientes' ? 'desc' : 'asc';
+
+      final response = await _expenseService.getExpenses(order: order);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          if (response.success && response.data != null) {
+            List<Expense> allExpenses = response.data!;
+
+            if (_selectedCategoryId != null &&
+                _selectedCategoryId!.isNotEmpty) {
+              _expenses = allExpenses
+                  .where((expense) => expense.categoryId == _selectedCategoryId)
+                  .toList();
+            } else {
+              _expenses = allExpenses;
+            }
+          } else {
+            _errorMessage = response.error ?? 'Error al cargar gastos';
+            _expenses = [];
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Error inesperado: $e';
+          _expenses = [];
+        });
+      }
+    }
+  }
+
+  String _getCategoryName(String? categoryId) {
+    if (categoryId == null || categoryId.isEmpty) return 'Sin categoría';
+
+    final category = _categories.firstWhere(
+      (cat) => cat.id == categoryId,
+      orElse: () => Category(
+        id: '',
+        userId: '',
+        name: 'Categoría desconocida',
+        createdAt: DateTime.now(),
+      ),
+    );
+    return category.name;
+  }
+
+  String _getProviderName(String? providerId) {
+    if (providerId == null || providerId.isEmpty) return 'Sin proveedor';
+
+    final provider = _providers.firstWhere(
+      (prov) => prov.id == providerId,
+      orElse: () => Provider(
+        id: '',
+        userId: '',
+        name: 'Proveedor desconocido',
+        categoryId: null,
+        contact: '',
+        description: '',
+        status: true,
+        createdAt: DateTime.now(),
+      ),
+    );
+    return provider.name;
+  }
+
+  Widget _buildExpensesList() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainBlue),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.red[800], fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadExpenses,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.mainBlue,
+                foregroundColor: AppColors.mainWhite,
+              ),
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_expenses.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.receipt_outlined, size: 64, color: AppColors.mainBlue),
+            SizedBox(height: 16),
+            Text(
+              'No hay gastos disponibles',
+              style: TextStyle(
+                color: AppColors.mainBlue,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Agrega un gasto o cambia el filtro',
+              style: TextStyle(color: AppColors.mainBlue, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: _expenses.length,
+      itemBuilder: (context, index) {
+        final expense = _expenses[index];
+        return ExpenseCard(
+          id: expense.id,
+          title: expense.title,
+          category: _getCategoryName(expense.categoryId),
+          description: expense.description.length > 50
+              ? '${expense.description.substring(0, 50)}...'
+              : expense.description,
+          amount: '\$${expense.amount.toStringAsFixed(0)}',
+          date: '${expense.createdAt.day.toString().padLeft(2, '0')}-${expense.createdAt.month.toString().padLeft(2, '0')}-${expense.createdAt.year}',
+          onDetailsPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExpenseDetailPage(
+                  id: expense.id,
+                  title: expense.title,
+                  category: _getCategoryName(expense.categoryId),
+                  categoryId: expense.categoryId,
+                  amount: '\$${expense.amount.toStringAsFixed(0)}',
+                  providerId: expense.providerId,
+                  provider: _getProviderName(expense.providerId),
+                  description: expense.description,
+                ),
+              ),
+            );
+            if (result == true) {
+              _loadExpenses();
+            }
+          },
+          isEven: index % 2 == 0,
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,8 +296,11 @@ class _ExpensesPageState extends State<ExpensesPage> {
             padding: const EdgeInsets.all(20),
             child: DefaultButton(
               text: 'Agregar gastos', 
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.addExpense);
+              onPressed: () async {
+                final result = await Navigator.pushNamed(context, AppRoutes.addExpense);
+                if (result == true) {
+                  _loadExpenses();
+                }
               }
             ),
           ),
@@ -146,6 +352,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
                             setState(() {
                               _selectedFilter = newValue;
                             });
+                            _loadExpenses();
                           }
                         },
                         dropdownColor: AppColors.mainBlue,
@@ -172,48 +379,52 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
                       const Spacer(),
 
-                      DropdownButton<String>(
-                        value: _selectedCategory,
-                        underline: const SizedBox(),
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: AppColors.mainWhite,
-                        ),
-                        style: const TextStyle(
-                          color: AppColors.mainWhite,
-                          fontSize: 14,
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Selecciona',
-                            child: Text('Selecciona'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Comida',
-                            child: Text('Comida'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Bebidas',
-                            child: Text('Bebidas'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Limpieza',
-                            child: Text('Limpieza'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Oficina',
-                            child: Text('Oficina'),
-                          ),
-                        ],
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _selectedCategory = newValue;
-                            });
-                          }
-                        },
-                        dropdownColor: AppColors.mainBlue,
-                      ),
+                      _isLoadingCategories
+                          ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.mainWhite,
+                                  ),
+                                ),
+                              ),
+                          )
+                          : DropdownButton<String>(
+                              value: _selectedCategoryId,
+                              underline: const SizedBox(),
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: AppColors.mainWhite,
+                              ),
+                              style: const TextStyle(
+                                color: AppColors.mainWhite,
+                                fontSize: 14,
+                              ),
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  child: Text('Todas las categorías', style: TextStyle(color: AppColors.mainWhite)),
+                                ),
+                                ..._categories.map((category) => DropdownMenuItem<String>(
+                                  value: category.id,
+                                  child: Text(
+                                    category.name,
+                                    style: const TextStyle(color: AppColors.mainWhite),
+                                  ),
+                                )),
+                              ],
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedCategoryId = newValue;
+                                });
+                                _loadExpenses();
+                              },
+                              dropdownColor: AppColors.mainBlue,
+                            ),
                     ],
                   ),
 
@@ -225,38 +436,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
           const Divider(color: AppColors.mainBlue, thickness: 2, height: 0),
 
-          Expanded(
-            child: ListView.builder(
-              itemCount: _expenses.length,
-              itemBuilder: (context, index) {
-                final expense = _expenses[index];
-                return ExpenseCard(
-                  id: expense['id']!,
-                  title: expense['title']!,
-                  description: expense['description']!,
-                  category: expense['category']!,
-                  amount: expense['amount']!,
-                  date: expense['date']!,
-                  onDetailsPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ExpenseDetailPage(
-                          id: expense['id']!,
-                          title: expense['title']!,
-                          category: expense['category']!,
-                          amount: expense['amount']!,
-                          provider: expense['provider']!,
-                          description: expense['fullDescription']!,
-                        ),
-                      ),
-                    );
-                  },
-                  isEven: index % 2 == 0,
-                );
-              },
-            ),
-          ),
+          Expanded(child: _buildExpensesList()),
         ],
       ),
       bottomNavigationBar: NavBar(

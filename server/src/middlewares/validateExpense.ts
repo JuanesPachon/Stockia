@@ -5,9 +5,7 @@ export const expenseValidations = [
         .notEmpty()
         .withMessage('Expense title is required')
         .isLength({ min: 2, max: 100 })
-        .withMessage('Expense title must be between 2 and 100 characters')
-        .matches(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,-]+$/)
-        .withMessage('Expense title must contain only letters, numbers, spaces and common punctuation'),
+        .withMessage('Expense title must be between 2 and 100 characters'),
 
     check('amount')
         .notEmpty()
@@ -35,9 +33,7 @@ export const editExpenseValidations = [
     check('title')
         .optional()
         .isLength({ min: 2, max: 100 })
-        .withMessage('Expense title must be between 2 and 100 characters')
-        .matches(/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,-]+$/)
-        .withMessage('Expense title must contain only letters, numbers, spaces and common punctuation'),
+        .withMessage('Expense title must be between 2 and 100 characters'),
 
     check('amount')
         .optional()

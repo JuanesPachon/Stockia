@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../../data/services/expense_service.dart';
+import '../../../../data/services/category_service.dart';
+import '../../../../data/services/provider_service.dart';
+import '../../../../data/models/expense/create_expense_request.dart';
+import '../../../../data/models/category.dart';
+import '../../../../data/models/provider.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/default_textfield.dart';
-import '../../../../shared/widgets/default_dropdown.dart';
+
 import '../../../../shared/widgets/default_textarea.dart';
 
 class AddExpensePage extends StatefulWidget {
@@ -17,13 +23,29 @@ class AddExpensePage extends StatefulWidget {
 
 class _AddExpensePageState extends State<AddExpensePage> {
   int _currentBottomIndex = 1;
-  
+  final _formKey = GlobalKey<FormState>();
+  final ExpenseService _expenseService = ExpenseService();
+  final CategoryService _categoryService = CategoryService();
+  final ProviderService _providerService = ProviderService();
+
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  
-  String _selectedCategory = 'Comida';
-  String _selectedProvider = 'No aplica';
+
+  bool _isLoading = false;
+  bool _isLoadingCategories = false;
+  bool _isLoadingProviders = false;
+  List<Category> _categories = [];
+  List<Provider> _providers = [];
+  String? _selectedCategoryId;
+  String? _selectedProviderId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+    _loadProviders();
+  }
 
   @override
   void dispose() {
@@ -31,6 +53,155 @@ class _AddExpensePageState extends State<AddExpensePage> {
     _amountController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoadingCategories = true;
+    });
+
+    try {
+      final response = await _categoryService.getCategories();
+
+      if (mounted && response.success && response.data != null) {
+        setState(() {
+          _categories = response.data!;
+          _isLoadingCategories = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingCategories = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadProviders() async {
+    setState(() {
+      _isLoadingProviders = true;
+    });
+
+    try {
+      final response = await _providerService.getProviders();
+
+      if (mounted && response.success && response.data != null) {
+        setState(() {
+          _providers = response.data!;
+          _isLoadingProviders = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoadingProviders = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingProviders = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _createExpense() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    // Double parsing validation
+    double? amount;
+    try {
+      amount = double.parse(_amountController.text.trim());
+      if (amount <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('El monto debe ser mayor a 0'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+        return;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Por favor ingrese un monto válido'),
+          backgroundColor: Colors.red[800],
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final request = CreateExpenseRequest(
+        title: _titleController.text.trim(),
+        amount: amount,
+        description: _descriptionController.text.trim(),
+        categoryId: _selectedCategoryId,
+        providerId: _selectedProviderId,
+      );
+      final response = await _expenseService.createExpense(request);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response.success && response.data != null) {
+          final expense = response.data!;
+          showCustomDialog(
+            context,
+            title: 'Se ha agregado el gasto:',
+            message: expense.title,
+            showSecondaryButton: false,
+            primaryButtonText: "Aceptar",
+            onPrimaryPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context, true);
+            },
+          );
+        } else {
+          String errorMessage = 'Error al crear el gasto, intente nuevamente.';
+
+          final error = response.error?.toLowerCase() ?? '';
+
+          if (error.contains('duplicate')) {
+            errorMessage = 'Ya existe un gasto con ese título.';
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red[800],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error inesperado: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -93,72 +264,183 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
                   Padding(
                     padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        DefaultTextField(
-                          label: 'Título del gasto:',
-                          controller: _titleController,
-                        ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          DefaultTextField(
+                            label: 'Título del gasto:',
+                            controller: _titleController,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Este campo es requerido';
+                              }
+                              return null;
+                            },
+                          ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        DefaultTextField(
-                          label: 'Monto:',
-                          controller: _amountController,
-                          keyboardType: TextInputType.number,
-                        ),
+                          DefaultTextField(
+                            label: 'Monto:',
+                            controller: _amountController,
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Este campo es requerido';
+                              }
+                              final amount = double.tryParse(value.trim());
+                              if (amount == null || amount <= 0) {
+                                return 'Ingrese un monto válido mayor a 0';
+                              }
+                              return null;
+                            },
+                          ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        DefaultDropdown(
-                          label: 'Categoría:',
-                          value: _selectedCategory,
-                          items: const [
-                            'Comida',
-                            'Transporte',
-                            'Servicios',
-                            'Materiales',
-                            'Personal',
-                            'Otros',
-                          ],
-                          onChanged: (String? newValue) {
-                            if (newValue != null) {
-                              setState(() {
-                                _selectedCategory = newValue;
-                              });
-                            }
-                          },
-                        ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Categoría:',
+                                style: TextStyle(
+                                  color: AppColors.mainBlue,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              _isLoadingCategories
+                                  ? const SizedBox(
+                                      height: 50,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainBlue),
+                                        ),
+                                      ),
+                                    )
+                                  : DropdownButtonFormField<String>(
+                                      initialValue: _selectedCategoryId,
+                                      decoration: InputDecoration(
+                                        hintText: 'Selecciona una categoría',
+                                        hintStyle: const TextStyle(color: AppColors.mainBlue),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: AppColors.mainBlue),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: AppColors.mainBlue),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: AppColors.mainBlue, width: 2),
+                                        ),
+                                      ),
+                                      dropdownColor: AppColors.mainWhite,
+                                      items: [
+                                        const DropdownMenuItem<String>(
+                                          value: null,
+                                          child: Text(
+                                            'Sin categoría',
+                                            style: TextStyle(color: AppColors.mainBlue),
+                                          ),
+                                        ),
+                                        ..._categories.map((category) => DropdownMenuItem<String>(
+                                          value: category.id,
+                                          child: Text(
+                                            category.name,
+                                            style: const TextStyle(color: AppColors.mainBlue),
+                                          ),
+                                        )),
+                                      ],
+                                      onChanged: (String? value) {
+                                        setState(() {
+                                          _selectedCategoryId = value;
+                                        });
+                                      },
+                                    ),
+                            ],
+                          ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        DefaultDropdown(
-                          label: 'Proveedor:',
-                          value: _selectedProvider,
-                          items: const [
-                            'No aplica',
-                            'Mc Donalds',
-                            'Coca Cola',
-                            'Limpieza Total',
-                            'TechStore',
-                          ],
-                          onChanged: (String? newValue) {
-                            if (newValue != null) {
-                              setState(() {
-                                _selectedProvider = newValue;
-                              });
-                            }
-                          },
-                        ),
 
-                        const SizedBox(height: 20),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Proveedor:',
+                                style: TextStyle(
+                                  color: AppColors.mainBlue,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              _isLoadingProviders
+                                  ? const SizedBox(
+                                      height: 50,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainBlue),
+                                        ),
+                                      ),
+                                    )
+                                  : DropdownButtonFormField<String>(
+                                      initialValue: _selectedProviderId,
+                                      decoration: InputDecoration(
+                                        hintText: 'Selecciona un proveedor',
+                                        hintStyle: const TextStyle(color: AppColors.mainBlue),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: AppColors.mainBlue),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: AppColors.mainBlue),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: AppColors.mainBlue, width: 2),
+                                        ),
+                                      ),
+                                      dropdownColor: AppColors.mainWhite,
+                                      items: [
+                                        const DropdownMenuItem<String>(
+                                          value: null,
+                                          child: Text(
+                                            'Sin proveedor',
+                                            style: TextStyle(color: AppColors.mainBlue),
+                                          ),
+                                        ),
+                                        ..._providers.map((provider) => DropdownMenuItem<String>(
+                                          value: provider.id,
+                                          child: Text(
+                                            provider.name,
+                                            style: const TextStyle(color: AppColors.mainBlue),
+                                          ),
+                                        )),
+                                      ],
+                                      onChanged: (String? value) {
+                                        setState(() {
+                                          _selectedProviderId = value;
+                                        });
+                                      },
+                                    ),
+                            ],
+                          ),
 
-                        DefaultTextArea(
-                          label: 'Descripción:',
-                          controller: _descriptionController,
-                          maxLines: 6,
-                        ),
-                      ],
+                          const SizedBox(height: 20),
+
+                          DefaultTextArea(
+                            label: 'Descripción:',
+                            controller: _descriptionController,
+                            maxLines: 6,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -175,21 +457,8 @@ class _AddExpensePageState extends State<AddExpensePage> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: DefaultButton(
-                text: 'Agregar gasto', 
-                onPressed: () {
-                  final String expenseTitle = _titleController.text.trim();
-                  
-                  showCustomDialog(
-                    context,
-                    title: 'Se ha agregado el gasto:',
-                    message: '777 - $expenseTitle',
-                    primaryButtonText: "Aceptar",
-                    onPrimaryPressed: () => {
-                      Navigator.pop(context),
-                      Navigator.pop(context),
-                    },
-                  );
-                },
+                text: _isLoading ? 'Agregando...' : 'Agregar gasto',
+                onPressed: _isLoading ? null : _createExpense,
               ),
             ),
           ),
