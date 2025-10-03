@@ -1,7 +1,7 @@
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../../core/api/api_response.dart';
-import '../models/expense.dart';
+import '../models/expense/expense.dart';
 import '../models/expense/create_expense_request.dart';
 
 class ExpenseService {

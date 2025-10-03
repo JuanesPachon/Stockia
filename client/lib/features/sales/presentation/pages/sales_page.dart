@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../data/services/sale_service.dart';
-import '../../../../data/models/sale.dart';
+import '../../../../data/models/sale/sale.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../core/utils/currency_formatter.dart';

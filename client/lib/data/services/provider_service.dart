@@ -1,7 +1,7 @@
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../../core/api/api_response.dart';
-import '../models/provider.dart';
+import '../models/provider/provider.dart';
 import '../models/provider/create_provider_request.dart';
 
 class ProviderService {

@@ -4,8 +4,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/info_display_card.dart';
-import '../../../../data/models/sale.dart';
-import '../../../../data/models/product.dart';
+import '../../../../data/models/sale/sale.dart';
+import '../../../../data/models/product/product.dart';
 import '../../../../data/services/product_service.dart';
 
 class SaleDetailPage extends StatefulWidget {

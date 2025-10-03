@@ -1,7 +1,7 @@
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../../core/api/api_response.dart';
-import '../models/sale.dart';
+import '../models/sale/sale.dart';
 import '../models/sale/create_sale_request.dart';
 
 class SaleService {

@@ -1,7 +1,7 @@
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../../core/api/api_response.dart';
-import '../models/note.dart';
+import '../models/note/note.dart';
 import '../models/note/create_note_request.dart';
 
 class NoteService {
