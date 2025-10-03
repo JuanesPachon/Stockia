@@ -1,0 +1,12 @@
+export 'auth/auth.dart';
+export 'dashboard/dashboard.dart';
+export 'products/products.dart';
+export 'categories/categories.dart';
+export 'providers/providers.dart';
+export 'sales/sales.dart';
+export 'expenses/expenses.dart';
+export 'notes/notes.dart';
+export 'settings/settings.dart';
+export 'splash/splash.dart';
+export 'onboarding/onboarding.dart';
+export 'management/management.dart';
