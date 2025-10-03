@@ -73,16 +73,12 @@ class _ProductsPageState extends State<ProductsPage> {
   }
 
   Future<void> _loadProviders() async {
-    try {
-      final response = await _providerService.getProviders();
+    final response = await _providerService.getProviders();
 
-      if (mounted && response.success && response.data != null) {
-        setState(() {
-          _providers = response.data!;
-        });
-      }
-    } catch (e) {
-      // Error silencioso para proveedores ya que es solo para nombres
+    if (mounted && response.success && response.data != null) {
+      setState(() {
+        _providers = response.data!;
+      });
     }
   }
 
@@ -243,7 +239,8 @@ class _ProductsPageState extends State<ProductsPage> {
                   providerId: product.providerId,
                   stock: product.stock.toString(),
                   price: product.price.toString(),
-                  imageUrl: product.imageUrl ?? 'assets/images/default_product.png',
+                  imageUrl:
+                      product.imageUrl ?? 'assets/images/default_product.png',
                 ),
               ),
             );
@@ -288,13 +285,16 @@ class _ProductsPageState extends State<ProductsPage> {
           Padding(
             padding: const EdgeInsets.all(20),
             child: DefaultButton(
-              text: 'Agregar producto', 
+              text: 'Agregar producto',
               onPressed: () async {
-                final result = await Navigator.pushNamed(context, AppRoutes.addProduct);
+                final result = await Navigator.pushNamed(
+                  context,
+                  AppRoutes.addProduct,
+                );
                 if (result == true) {
                   _loadProducts();
                 }
-              }
+              },
             ),
           ),
 
@@ -373,12 +373,15 @@ class _ProductsPageState extends State<ProductsPage> {
                       const Spacer(),
 
                       _isLoadingCategories
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainWhite),
+                          ? Padding(
+                              padding: const EdgeInsets.only(
+                                right: 16,
+                                top: 14,
+                                bottom: 14,
+                              ),
+                              child: Text(
+                                'Cargando...',
+                                style: TextStyle(color: AppColors.mainWhite),
                               ),
                             )
                           : DropdownButton<String>(
@@ -399,12 +402,24 @@ class _ProductsPageState extends State<ProductsPage> {
                               items: [
                                 const DropdownMenuItem<String>(
                                   value: null,
-                                  child: Text('Todas las categorías', style: TextStyle(color: AppColors.mainWhite)),
+                                  child: Text(
+                                    'Todas las categorías',
+                                    style: TextStyle(
+                                      color: AppColors.mainWhite,
+                                    ),
+                                  ),
                                 ),
-                                ..._categories.map<DropdownMenuItem<String>>((Category category) {
+                                ..._categories.map<DropdownMenuItem<String>>((
+                                  Category category,
+                                ) {
                                   return DropdownMenuItem<String>(
                                     value: category.id,
-                                    child: Text(category.name, style: const TextStyle(color: AppColors.mainWhite)),
+                                    child: Text(
+                                      category.name,
+                                      style: const TextStyle(
+                                        color: AppColors.mainWhite,
+                                      ),
+                                    ),
                                   );
                                 }),
                               ],

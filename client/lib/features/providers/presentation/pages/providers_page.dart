@@ -334,12 +334,15 @@ class _ProvidersPageState extends State<ProvidersPage> {
                       const Spacer(),
 
                       _isLoadingCategories
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.mainWhite),
+                          ? Padding(
+                              padding: const EdgeInsets.only(
+                                right: 16,
+                                top: 14,
+                                bottom: 14,
+                              ),
+                              child: Text(
+                                'Cargando...',
+                                style: TextStyle(color: AppColors.mainWhite),
                               ),
                             )
                           : DropdownButton<String>(

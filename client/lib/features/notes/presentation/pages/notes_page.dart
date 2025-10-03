@@ -337,14 +337,15 @@ class _NotesPageState extends State<NotesPage> {
                       const Spacer(),
 
                       _isLoadingCategories
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.mainWhite,
-                                ),
+                          ? Padding(
+                              padding: const EdgeInsets.only(
+                                right: 16,
+                                top: 14,
+                                bottom: 14,
+                              ),
+                              child: Text(
+                                'Cargando...',
+                                style: TextStyle(color: AppColors.mainWhite),
                               ),
                             )
                           : DropdownButton<String>(

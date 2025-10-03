@@ -390,12 +390,15 @@ class _AddSalePageState extends State<AddSalePage> {
                       ),
                       const Spacer(),
                       _isLoadingCategories
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.mainWhite,
+                          ? Padding(
+                              padding: const EdgeInsets.only(
+                                right: 16,
+                                top: 14,
+                                bottom: 14,
+                              ),
+                              child: Text(
+                                'Cargando...',
+                                style: TextStyle(color: AppColors.mainWhite),
                               ),
                             )
                           : DropdownButton<String?>(

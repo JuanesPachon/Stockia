@@ -382,18 +382,16 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
                       _isLoadingCategories
                           ? Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.mainWhite,
-                                  ),
-                                ),
+                              padding: const EdgeInsets.only(
+                                right: 16,
+                                top: 14,
+                                bottom: 14,
                               ),
-                          )
+                              child: Text(
+                                'Cargando...',
+                                style: TextStyle(color: AppColors.mainWhite),
+                              ),
+                            )
                           : DropdownButton<String>(
                               value: _selectedCategoryId,
                               underline: const SizedBox(),

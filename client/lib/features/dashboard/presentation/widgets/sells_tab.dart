@@ -164,7 +164,7 @@ class _VentasTabState extends State<VentasTab> {
     _topProducts = sortedProducts.take(3).map((e) => e.key).toList();
     
     _latestSales = filteredSales.take(3).map((sale) => {
-      'Venta #${sale.id.substring(sale.id.length - 3)}': CurrencyFormatter.formatCOP(sale.total)
+      'Venta #${sale.id.substring(sale.id.length - 6)}': CurrencyFormatter.formatCOP(sale.total)
     }).toList();
     
     if (_selectedProductId != null) {
