@@ -41,7 +41,7 @@ class ProductImage extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: AppColors.mainBlue, width: 1),
-        color: backgroundColor ?? Colors.orange.shade300,
+        color: backgroundColor ?? AppColors.mainBlue,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),

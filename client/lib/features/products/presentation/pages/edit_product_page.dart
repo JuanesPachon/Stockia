@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../shared/widgets/custom_alert_dialog.dart';
+import '../../../../shared/widgets/product_image.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../data/services/product_service.dart';
@@ -59,6 +62,10 @@ class _EditProductPageState extends State<EditProductPage> {
   List<Provider> _providers = [];
   String? _selectedCategoryId;
   String? _selectedProviderId;
+
+  File? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _imageChanged = false;
 
   @override
   void initState() {
@@ -129,7 +136,9 @@ class _EditProductPageState extends State<EditProductPage> {
 
       if (mounted && response.success && response.data != null) {
         setState(() {
-          _providers = response.data!.where((provider) => provider.status).toList();
+          _providers = response.data!
+              .where((provider) => provider.status)
+              .toList();
 
           if (_selectedProviderId != null) {
             final providerExists = _providers.any(
@@ -158,6 +167,40 @@ class _EditProductPageState extends State<EditProductPage> {
     }
   }
 
+  Future<void> _selectImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 800,
+        maxHeight: 800,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+          _imageChanged = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al seleccionar imagen: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _selectedImage = null;
+      _imageChanged = true;
+    });
+  }
+
   Future<void> _updateProduct() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -174,19 +217,26 @@ class _EditProductPageState extends State<EditProductPage> {
         price: double.parse(_priceController.text.trim()),
       );
 
-      final response = await _productService.updateProduct(widget.id, request);
+      final response = _imageChanged
+          ? await _productService.updateProductWithImage(
+              widget.id,
+              request,
+              _selectedImage,
+            )
+          : await _productService.updateProduct(widget.id, request);
 
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
 
-        if (response.success && response.data != null) {
-          final product = response.data!;
+        if (response.success) {
+          final productName =
+              response.data?.name ?? _nameController.text.trim();
           showCustomDialog(
             context,
             title: 'Se ha editado el producto:',
-            message: product.name,
+            message: productName,
             showSecondaryButton: false,
             primaryButtonText: "Aceptar",
             onPrimaryPressed: () {
@@ -365,6 +415,117 @@ class _EditProductPageState extends State<EditProductPage> {
                       key: _formKey,
                       child: Column(
                         children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Imagen del producto:',
+                                style: TextStyle(
+                                  color: AppColors.mainBlue,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    width: 100,
+                                    height: 100,
+                                    child: _selectedImage != null
+                                        ? Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: AppColors.mainBlue,
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: Stack(
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  child: Image.file(
+                                                    _selectedImage!,
+                                                    width: 100,
+                                                    height: 100,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  top: 4,
+                                                  right: 4,
+                                                  child: GestureDetector(
+                                                    onTap: _removeImage,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            4,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.close,
+                                                        color: Colors.white,
+                                                        size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : ProductImage(
+                                            imageUrl: widget.imageUrl,
+                                            width: 100,
+                                            height: 100,
+                                            fallbackIcon: Icons.inventory,
+                                            fallbackIconSize: 40,
+                                          ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: _selectImage,
+                                      icon: const Icon(Icons.image),
+                                      label: Text(
+                                        _selectedImage != null
+                                            ? 'Cambiar imagen'
+                                            : widget.imageUrl != null
+                                            ? 'Cambiar imagen'
+                                            : 'Seleccionar imagen',
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.mainBlue,
+                                        side: const BorderSide(
+                                          color: AppColors.mainBlue,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        backgroundColor: const Color.fromARGB(
+                                          255,
+                                          205,
+                                          187,
+                                          152,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 20),
+
                           DefaultTextField(
                             label: 'Nombre del producto:',
                             controller: _nameController,
@@ -411,7 +572,9 @@ class _EditProductPageState extends State<EditProductPage> {
                                         ),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.only(left: 12),
+                                        padding: const EdgeInsets.only(
+                                          left: 12,
+                                        ),
                                         child: Text(
                                           'Cargando...',
                                           style: TextStyle(
@@ -476,7 +639,9 @@ class _EditProductPageState extends State<EditProductPage> {
                                         ),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.only(left: 12),
+                                        padding: const EdgeInsets.only(
+                                          left: 12,
+                                        ),
                                         child: Text(
                                           'Cargando...',
                                           style: TextStyle(

@@ -372,6 +372,132 @@ class _AddProductPageState extends State<AddProductPage> {
                       key: _formKey,
                       child: Column(
                         children: [
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Imagen del producto:',
+                                style: TextStyle(
+                                  color: AppColors.mainBlue,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    width: 100,
+                                    height: 100,
+                                    child: _selectedImage != null
+                                        ? Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: AppColors.mainBlue,
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: Stack(
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  child: Image.file(
+                                                    _selectedImage!,
+                                                    width: 100,
+                                                    height: 100,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  top: 4,
+                                                  right: 4,
+                                                  child: GestureDetector(
+                                                    onTap: _removeImage,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                        4,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.close,
+                                                        color: Colors.white,
+                                                        size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : Container(
+                                            width: 100,
+                                            height: 100,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: AppColors.mainBlue,
+                                                width: 1,
+                                              ),
+                                              color: AppColors.mainBlue
+                                            ),
+                                            child: const Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.inventory,
+                                                  size: 40,
+                                                  color: AppColors.mainWhite,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: _selectImage,
+                                      icon: const Icon(Icons.image),
+                                      label: Text(
+                                        _selectedImage != null
+                                            ? 'Cambiar imagen'
+                                            : 'Seleccionar imagen',
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.mainBlue,
+                                        side: const BorderSide(
+                                          color: AppColors.mainBlue,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        backgroundColor: const Color.fromARGB(
+                                          255,
+                                          205,
+                                          187,
+                                          152,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 20),
+
                           DefaultTextField(
                             label: 'Nombre del producto:',
                             controller: _nameController,
@@ -534,114 +660,6 @@ class _AddProductPageState extends State<AddProductPage> {
 
                           const SizedBox(height: 20),
 
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Imagen del producto:',
-                                style: TextStyle(
-                                  color: AppColors.mainBlue,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-
-                              _selectedImage != null
-                                  ? Container(
-                                      width: 200,
-                                      height: 200,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: AppColors.mainBlue,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Stack(
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
-                                            child: Image.file(
-                                              _selectedImage!,
-                                              width: 200,
-                                              height: 200,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                          Positioned(
-                                            top: 8,
-                                            right: 8,
-                                            child: GestureDetector(
-                                              onTap: _removeImage,
-                                              child: Container(
-                                                padding: const EdgeInsets.all(
-                                                  4,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red,
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.close,
-                                                  color: Colors.white,
-                                                  size: 16,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  : GestureDetector(
-                                      onTap: _selectImage,
-                                      child: Container(
-                                        width: 200,
-                                        height: 200,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          border: Border.all(
-                                            color: AppColors.mainBlue,
-                                            width: 2,
-                                            style: BorderStyle.solid,
-                                          ),
-                                          color: const Color.fromARGB(
-                                            255,
-                                            245,
-                                            245,
-                                            245,
-                                          ),
-                                        ),
-                                        child: const Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons
-                                                  .add_photo_alternate_outlined,
-                                              size: 50,
-                                              color: AppColors.mainBlue,
-                                            ),
-                                            SizedBox(height: 8),
-                                            Text(
-                                              'Seleccionar imagen',
-                                              style: TextStyle(
-                                                color: AppColors.mainBlue,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                            ],
-                          ),
                         ],
                       ),
                     ),

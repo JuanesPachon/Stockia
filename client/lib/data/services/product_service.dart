@@ -120,6 +120,39 @@ class ProductService {
     }
   }
 
+  Future<ApiResponse<Product>> updateProductWithImage(
+    String productId,
+    CreateProductRequest request,
+    File? imageFile,
+  ) async {
+    try {
+      FormData formData = FormData.fromMap({
+        'name': request.name,
+        'stock': request.stock,
+        'price': request.price,
+        if (request.categoryId != null && request.categoryId!.isNotEmpty)
+          'categoryId': request.categoryId,
+        if (request.providerId != null && request.providerId!.isNotEmpty)
+          'providerId': request.providerId,
+        if (imageFile != null)
+          'imageUrl': await MultipartFile.fromFile(
+            imageFile.path,
+            filename: 'product_image.jpg',
+          ),
+      });
+
+      final response = await _apiClient.patchFormData<Product>(
+        ApiEndpoints.productById(productId),
+        formData,
+        fromJson: null,
+      );
+
+      return response;
+    } catch (e) {
+      return ApiResponse.error('Error al actualizar producto con imagen: $e');
+    }
+  }
+
   Future<ApiResponse<String>> deleteProduct(String productId) async {
     try {
       final response = await _apiClient.delete<String>(

@@ -125,6 +125,33 @@ class ApiClient {
     }
   }
 
+  Future<ApiResponse<T>> patchFormData<T>(
+    String endpoint,
+    FormData formData, {
+    T? Function(Map<String, dynamic>)? fromJson,
+    Map<String, String>? additionalHeaders,
+  }) async {
+    try {
+      final options = Options();
+      if (additionalHeaders != null) {
+        options.headers = {...options.headers ?? {}, ...additionalHeaders};
+      }
+
+      final response = await _dio.patch(
+        endpoint,
+        data: formData,
+        options: options,
+      );
+
+      return _handleResponse<T>(response, fromJson);
+      
+    } on DioException catch (e) {
+      return _handleDioError(e);
+    } catch (e) {
+      return ApiResponse.error('Error inesperado: $e');
+    }
+  }
+
   Future<ApiResponse<T>> patch<T>(
     String endpoint,
     Map<String, dynamic> body, {
