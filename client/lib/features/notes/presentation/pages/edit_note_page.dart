@@ -5,11 +5,12 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../data/services/note_service.dart';
 import '../../../../data/services/category_service.dart';
 import '../../../../data/models/note/create_note_request.dart';
-import '../../../../data/models/category.dart';
+import '../../../../data/models/category/category.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/default_textfield.dart';
 import '../../../../shared/widgets/default_textarea.dart';
+import '../../../../shared/widgets/default_dropdown.dart';
 
 class EditNotePage extends StatefulWidget {
   final String id;
@@ -70,14 +71,16 @@ class _EditNotePageState extends State<EditNotePage> {
       if (mounted && response.success && response.data != null) {
         setState(() {
           _categories = response.data!;
-          
+
           if (_selectedCategoryId != null) {
-            final categoryExists = _categories.any((cat) => cat.id == _selectedCategoryId);
+            final categoryExists = _categories.any(
+              (cat) => cat.id == _selectedCategoryId,
+            );
             if (!categoryExists) {
-              _selectedCategoryId = null; 
+              _selectedCategoryId = null;
             }
           }
-          
+
           _isLoadingCategories = false;
         });
       } else {
@@ -164,6 +167,37 @@ class _EditNotePageState extends State<EditNotePage> {
     }
   }
 
+  List<String> _getCategoryItems() {
+    return _categories.map((category) => category.name).toList();
+  }
+
+  String _getCategoryIdByName(String categoryName) {
+    final category = _categories.firstWhere(
+      (cat) => cat.name == categoryName,
+      orElse: () =>
+          Category(id: '', name: '', userId: '', createdAt: DateTime.now()),
+    );
+    return category.id;
+  }
+
+  String _getSelectedCategoryName(String? categoryId) {
+    if (categoryId == null) return '';
+    final category = _categories.firstWhere(
+      (cat) => cat.id == categoryId,
+      orElse: () =>
+          Category(id: '', name: '', userId: '', createdAt: DateTime.now()),
+    );
+    return category.name;
+  }
+
+  void _onCategoryChanged(String? newValue) {
+    if (newValue != null) {
+      setState(() {
+        _selectedCategoryId = _getCategoryIdByName(newValue);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -242,119 +276,66 @@ class _EditNotePageState extends State<EditNotePage> {
                           const SizedBox(height: 20),
 
                           _isLoadingCategories
-                              ? Container(
-                                  alignment: Alignment.centerLeft,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Categoría:',
-                                        style: TextStyle(
-                                          color: AppColors.mainBlue,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Container(
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.mainWhite,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          border: Border.all(
-                                            color: AppColors.mainBlue,
-                                          ),
-                                        ),
-                                        child: const Row(
-                                          children: [
-                                            SizedBox(
-                                              width: 16,
-                                              height: 16,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                              ),
-                                            ),
-                                            SizedBox(width: 12),
-                                            Text('Cargando categorías...'),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Column(
+                              ? Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
                                       'Categoría (opcional):',
                                       style: TextStyle(
                                         color: AppColors.mainBlue,
-                                        fontWeight: FontWeight.w600,
                                         fontSize: 16,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
+                                      padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: AppColors.mainWhite,
+                                        color: const Color.fromARGB(
+                                          255,
+                                          205,
+                                          187,
+                                          152,
+                                        ),
+                                        borderRadius: BorderRadius.circular(30),
                                         border: Border.all(
                                           color: AppColors.mainBlue,
+                                          width: 1.5,
                                         ),
-                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          value: _selectedCategoryId,
-                                          hint: const Text(
-                                            'Seleccionar categoría',
-                                            style: TextStyle(
-                                              color: AppColors.mainBlue,
-                                            ),
-                                          ),
-                                          isExpanded: true,
-                                          items: [
-                                            const DropdownMenuItem<String>(
-                                              value: null,
-                                              child: Text(
-                                                'Sin categoría',
-                                                style: TextStyle(
-                                                  color: AppColors.mainBlue,
-                                                ),
-                                              ),
-                                            ),
-                                            ..._categories.map((category) {
-                                              return DropdownMenuItem<String>(
-                                                value: category.id,
-                                                child: Text(
-                                                  category.name,
-                                                  style: const TextStyle(
-                                                    color: AppColors.mainBlue,
-                                                  ),
-                                                ),
-                                              );
-                                            }),
-                                          ],
-                                          onChanged: (String? newValue) {
-                                            setState(() {
-                                              _selectedCategoryId = newValue;
-                                            });
-                                          },
-                                          dropdownColor: AppColors.mainWhite,
-                                          style: const TextStyle(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 12),
+                                        child: Text(
+                                          'Cargando...',
+                                          style: TextStyle(
                                             color: AppColors.mainBlue,
+                                            fontSize: 16,
                                           ),
-                                          iconEnabledColor: AppColors.mainBlue,
                                         ),
                                       ),
                                     ),
                                   ],
+                                )
+                              : DefaultDropdown(
+                                  label: 'Categoría (opcional):',
+                                  value: _getSelectedCategoryName(
+                                    _selectedCategoryId,
+                                  ),
+                                  items: [
+                                    'Sin categoría',
+                                    ..._getCategoryItems(),
+                                  ],
+                                  onChanged: (String? newValue) {
+                                    if (newValue == 'Sin categoría') {
+                                      setState(() {
+                                        _selectedCategoryId = null;
+                                      });
+                                    } else {
+                                      _onCategoryChanged(newValue);
+                                    }
+                                  },
+                                  hintText: 'Seleccionar categoría',
                                 ),
 
                           const SizedBox(height: 20),

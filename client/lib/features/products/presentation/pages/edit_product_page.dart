@@ -6,11 +6,12 @@ import '../../../../data/services/product_service.dart';
 import '../../../../data/services/category_service.dart';
 import '../../../../data/services/provider_service.dart';
 import '../../../../data/models/product/create_product_request.dart';
-import '../../../../data/models/category.dart';
-import '../../../../data/models/provider.dart';
+import '../../../../data/models/category/category.dart';
+import '../../../../data/models/provider/provider.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/default_textfield.dart';
+import '../../../../shared/widgets/default_dropdown.dart';
 
 class EditProductPage extends StatefulWidget {
   final String id;
@@ -46,11 +47,11 @@ class _EditProductPageState extends State<EditProductPage> {
   final ProductService _productService = ProductService();
   final CategoryService _categoryService = CategoryService();
   final ProviderService _providerService = ProviderService();
-  
+
   late TextEditingController _nameController;
   late TextEditingController _stockController;
   late TextEditingController _priceController;
-  
+
   bool _isLoading = false;
   bool _isLoadingCategories = false;
   bool _isLoadingProviders = false;
@@ -90,14 +91,16 @@ class _EditProductPageState extends State<EditProductPage> {
       if (mounted && response.success && response.data != null) {
         setState(() {
           _categories = response.data!;
-          
+
           if (_selectedCategoryId != null) {
-            final categoryExists = _categories.any((cat) => cat.id == _selectedCategoryId);
+            final categoryExists = _categories.any(
+              (cat) => cat.id == _selectedCategoryId,
+            );
             if (!categoryExists) {
-              _selectedCategoryId = null; 
+              _selectedCategoryId = null;
             }
           }
-          
+
           _isLoadingCategories = false;
         });
       } else {
@@ -127,14 +130,16 @@ class _EditProductPageState extends State<EditProductPage> {
       if (mounted && response.success && response.data != null) {
         setState(() {
           _providers = response.data!;
-          
+
           if (_selectedProviderId != null) {
-            final providerExists = _providers.any((prov) => prov.id == _selectedProviderId);
+            final providerExists = _providers.any(
+              (prov) => prov.id == _selectedProviderId,
+            );
             if (!providerExists) {
-              _selectedProviderId = null; 
+              _selectedProviderId = null;
             }
           }
-          
+
           _isLoadingProviders = false;
         });
       } else {
@@ -223,6 +228,79 @@ class _EditProductPageState extends State<EditProductPage> {
     }
   }
 
+  // Funciones auxiliares para los dropdowns
+  List<String> _getCategoryItems() {
+    return _categories.map((category) => category.name).toList();
+  }
+
+  String _getCategoryIdByName(String categoryName) {
+    final category = _categories.firstWhere(
+      (cat) => cat.name == categoryName,
+      orElse: () =>
+          Category(id: '', name: '', userId: '', createdAt: DateTime.now()),
+    );
+    return category.id;
+  }
+
+  String _getSelectedCategoryName(String? categoryId) {
+    if (categoryId == null) return '';
+    final category = _categories.firstWhere(
+      (cat) => cat.id == categoryId,
+      orElse: () =>
+          Category(id: '', name: '', userId: '', createdAt: DateTime.now()),
+    );
+    return category.name;
+  }
+
+  void _onCategoryChanged(String? newValue) {
+    if (newValue != null) {
+      setState(() {
+        _selectedCategoryId = _getCategoryIdByName(newValue);
+      });
+    }
+  }
+
+  List<String> _getProviderItems() {
+    return _providers.map((provider) => provider.name).toList();
+  }
+
+  String _getProviderIdByName(String providerName) {
+    final provider = _providers.firstWhere(
+      (prov) => prov.name == providerName,
+      orElse: () => Provider(
+        id: '',
+        name: '',
+        status: true,
+        userId: '',
+        createdAt: DateTime.now(),
+      ),
+    );
+    return provider.id;
+  }
+
+  String _getSelectedProviderName(String? providerId) {
+    if (providerId == null) return '';
+    final provider = _providers.firstWhere(
+      (prov) => prov.id == providerId,
+      orElse: () => Provider(
+        id: '',
+        name: '',
+        status: true,
+        userId: '',
+        createdAt: DateTime.now(),
+      ),
+    );
+    return provider.name;
+  }
+
+  void _onProviderChanged(String? newValue) {
+    if (newValue != null) {
+      setState(() {
+        _selectedProviderId = _getProviderIdByName(newValue);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -303,141 +381,133 @@ class _EditProductPageState extends State<EditProductPage> {
 
                           const SizedBox(height: 20),
 
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Categoría:',
-                                style: TextStyle(
-                                  color: AppColors.mainBlue,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                decoration: BoxDecoration(
-                                  color: AppColors.mainWhite,
-                                  borderRadius: BorderRadius.circular(30),
-                                  border: Border.all(
-                                    color: AppColors.mainBlue,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: _isLoadingCategories
-                                    ? const Padding(
-                                        padding: EdgeInsets.all(16.0),
-                                        child: Center(
-                                          child: SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                          ),
+                          _isLoadingCategories
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Categoría:',
+                                      style: TextStyle(
+                                        color: AppColors.mainBlue,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          205,
+                                          187,
+                                          152,
                                         ),
-                                      )
-                                    : DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          isExpanded: true,
-                                          value: _selectedCategoryId,
-                                          hint: const Text(
-                                            'Seleccione una categoría',
-                                            style: TextStyle(color: AppColors.mainBlue),
-                                          ),
-                                          items: [
-                                            const DropdownMenuItem<String>(
-                                              value: null,
-                                              child: Text('Sin categoría'),
-                                            ),
-                                            ..._categories.map<DropdownMenuItem<String>>((Category category) {
-                                              return DropdownMenuItem<String>(
-                                                value: category.id,
-                                                child: Text(category.name),
-                                              );
-                                            }),
-                                          ],
-                                          onChanged: (String? newValue) {
-                                            setState(() {
-                                              _selectedCategoryId = newValue;
-                                            });
-                                          },
-                                          dropdownColor: AppColors.mainWhite,
-                                          style: const TextStyle(color: AppColors.mainBlue),
+                                        borderRadius: BorderRadius.circular(30),
+                                        border: Border.all(
+                                          color: AppColors.mainBlue,
+                                          width: 1.5,
                                         ),
                                       ),
-                              ),
-                            ],
-                          ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 12),
+                                        child: Text(
+                                          'Cargando...',
+                                          style: TextStyle(
+                                            color: AppColors.mainBlue,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : DefaultDropdown(
+                                  label: 'Categoría:',
+                                  value: _getSelectedCategoryName(
+                                    _selectedCategoryId,
+                                  ),
+                                  items: [
+                                    'Sin categoría',
+                                    ..._getCategoryItems(),
+                                  ],
+                                  onChanged: (String? newValue) {
+                                    if (newValue == 'Sin categoría') {
+                                      setState(() {
+                                        _selectedCategoryId = null;
+                                      });
+                                    } else {
+                                      _onCategoryChanged(newValue);
+                                    }
+                                  },
+                                  hintText: 'Seleccione una categoría',
+                                ),
 
                           const SizedBox(height: 20),
 
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Proveedor:',
-                                style: TextStyle(
-                                  color: AppColors.mainBlue,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                decoration: BoxDecoration(
-                                  color: AppColors.mainWhite,
-                                  borderRadius: BorderRadius.circular(30),
-                                  border: Border.all(
-                                    color: AppColors.mainBlue,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: _isLoadingProviders
-                                    ? const Padding(
-                                        padding: EdgeInsets.all(16.0),
-                                        child: Center(
-                                          child: SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                          ),
+                          _isLoadingProviders
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Proveedor:',
+                                      style: TextStyle(
+                                        color: AppColors.mainBlue,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(16.0),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          205,
+                                          187,
+                                          152,
                                         ),
-                                      )
-                                    : DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          isExpanded: true,
-                                          value: _selectedProviderId,
-                                          hint: const Text(
-                                            'Seleccione un proveedor',
-                                            style: TextStyle(color: AppColors.mainBlue),
-                                          ),
-                                          items: [
-                                            const DropdownMenuItem<String>(
-                                              value: null,
-                                              child: Text('Sin proveedor'),
-                                            ),
-                                            ..._providers.map<DropdownMenuItem<String>>((Provider provider) {
-                                              return DropdownMenuItem<String>(
-                                                value: provider.id,
-                                                child: Text(provider.name),
-                                              );
-                                            }),
-                                          ],
-                                          onChanged: (String? newValue) {
-                                            setState(() {
-                                              _selectedProviderId = newValue;
-                                            });
-                                          },
-                                          dropdownColor: AppColors.mainWhite,
-                                          style: const TextStyle(color: AppColors.mainBlue),
+                                        borderRadius: BorderRadius.circular(30),
+                                        border: Border.all(
+                                          color: AppColors.mainBlue,
+                                          width: 1.5,
                                         ),
                                       ),
-                              ),
-                            ],
-                          ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 12),
+                                        child: Text(
+                                          'Cargando...',
+                                          style: TextStyle(
+                                            color: AppColors.mainBlue,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : DefaultDropdown(
+                                  label: 'Proveedor:',
+                                  value: _getSelectedProviderName(
+                                    _selectedProviderId,
+                                  ),
+                                  items: [
+                                    'Sin proveedor',
+                                    ..._getProviderItems(),
+                                  ],
+                                  onChanged: (String? newValue) {
+                                    if (newValue == 'Sin proveedor') {
+                                      setState(() {
+                                        _selectedProviderId = null;
+                                      });
+                                    } else {
+                                      _onProviderChanged(newValue);
+                                    }
+                                  },
+                                  hintText: 'Seleccione un proveedor',
+                                ),
 
                           const SizedBox(height: 20),
 
@@ -462,7 +532,9 @@ class _EditProductPageState extends State<EditProductPage> {
                           DefaultTextField(
                             label: 'Precio c/u:',
                             controller: _priceController,
-                            keyboardType: TextInputType.numberWithOptions(decimal: true),
+                            keyboardType: TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Este campo es requerido';
