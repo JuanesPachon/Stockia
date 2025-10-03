@@ -93,7 +93,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
       if (mounted && response.success && response.data != null) {
         setState(() {
-          _providers = response.data!;
+          _providers = response.data!.where((provider) => provider.status).toList();
           _isLoadingProviders = false;
         });
       } else {

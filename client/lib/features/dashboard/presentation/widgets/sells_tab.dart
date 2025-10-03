@@ -146,13 +146,11 @@ class _VentasTabState extends State<VentasTab> {
   }
 
   void _calculateStats() {
-    final filteredSales = _filterSalesByTimeRange(_sales, _selectedTimeRange);
-    
-    _totalSales = filteredSales.length;
-    _totalRevenue = filteredSales.fold(0.0, (sum, sale) => sum + sale.total);
+    _totalSales = _sales.length;
+    _totalRevenue = _sales.fold(0.0, (sum, sale) => sum + sale.total);
     
     Map<String, int> productSales = {};
-    for (var sale in filteredSales) {
+    for (var sale in _sales) {
       for (var saleProduct in sale.products) {
         final productName = saleProduct.product.name;
         productSales[productName] = (productSales[productName] ?? 0) + saleProduct.quantity;
@@ -163,28 +161,31 @@ class _VentasTabState extends State<VentasTab> {
       ..sort((a, b) => b.value.compareTo(a.value));
     _topProducts = sortedProducts.take(3).map((e) => e.key).toList();
     
-    _latestSales = filteredSales.take(3).map((sale) => {
+    _latestSales = _sales.take(3).map((sale) => {
       'Venta #${sale.id.substring(sale.id.length - 6)}': CurrencyFormatter.formatCOP(sale.total)
     }).toList();
+    
+    final filteredSalesProduct = _filterSalesByTimeRange(_sales, _selectedTimeRange);
     
     if (_selectedProductId != null) {
       _selectedProductUnits = 0;
       _selectedProductRevenue = 0.0;
       
-      for (var sale in filteredSales) {
+      for (var sale in filteredSalesProduct) {
         for (var saleProduct in sale.products) {
           if (saleProduct.product.id == _selectedProductId) {
-            _selectedProductUnits += saleProduct.quantity;
+            _selectedProductUnits += saleProduct.quantity.toInt();
             _selectedProductRevenue += saleProduct.product.price * saleProduct.quantity;
           }
         }
       }
     } else {
-      _selectedProductUnits = filteredSales.fold(0, (sum, sale) => 
-          sum + sale.products.fold(0, (productSum, saleProduct) => productSum + saleProduct.quantity));
-      _selectedProductRevenue = _totalRevenue;
+      _selectedProductUnits = filteredSalesProduct.fold(0, (sum, sale) => 
+          sum + sale.products.fold(0, (productSum, saleProduct) => productSum + saleProduct.quantity.toInt()));
+      _selectedProductRevenue = filteredSalesProduct.fold(0.0, (sum, sale) => sum + sale.total);
     }
     
+    // Detalle por categorías - CON filtro de tiempo  
     final filteredSalesCategory = _filterSalesByTimeRange(_sales, _selectedTimeRangeCategory);
     
     if (_selectedCategoryId != null) {
@@ -199,14 +200,14 @@ class _VentasTabState extends State<VentasTab> {
           );
           
           if (category.id == _selectedCategoryId) {
-            _selectedCategoryUnits += saleProduct.quantity;
+            _selectedCategoryUnits += saleProduct.quantity.toInt();
             _selectedCategoryRevenue += saleProduct.product.price * saleProduct.quantity;
           }
         }
       }
     } else {
       _selectedCategoryUnits = filteredSalesCategory.fold(0, (sum, sale) => 
-          sum + sale.products.fold(0, (productSum, saleProduct) => productSum + saleProduct.quantity));
+          sum + sale.products.fold(0, (productSum, saleProduct) => productSum + saleProduct.quantity.toInt()));
       _selectedCategoryRevenue = filteredSalesCategory.fold(0.0, (sum, sale) => sum + sale.total);
     }
     

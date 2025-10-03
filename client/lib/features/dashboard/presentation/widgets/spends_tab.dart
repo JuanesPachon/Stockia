@@ -107,13 +107,11 @@ class _GastosTabState extends State<GastosTab> {
   }
 
   void _calculateStats() {
-    final filteredExpenses = _filterExpensesByTimeRange(_expenses, _selectedTimeRange);
-    
-    _totalExpenses = filteredExpenses.length;
-    _totalAmount = filteredExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
+    _totalExpenses = _expenses.length;
+    _totalAmount = _expenses.fold(0.0, (sum, expense) => sum + expense.amount);
     
     Map<String, double> categoryAmounts = {};
-    for (var expense in filteredExpenses) {
+    for (var expense in _expenses) {
       if (expense.categoryId != null) {
         final category = _categories.firstWhere(
           (cat) => cat.id == expense.categoryId,
@@ -127,17 +125,19 @@ class _GastosTabState extends State<GastosTab> {
       ..sort((a, b) => b.value.compareTo(a.value));
     _topCategories = sortedCategories.take(3).map((e) => e.key).toList();
     
-    _latestExpenses = filteredExpenses.take(3).map((expense) => {
+    _latestExpenses = _expenses.take(3).map((expense) => {
       'Gasto #${expense.id.substring(expense.id.length - 3)}': CurrencyFormatter.formatCOP(expense.amount)
     }).toList();
+    
+    final filteredExpenses = _filterExpensesByTimeRange(_expenses, _selectedTimeRange);
     
     if (_selectedCategoryId != null) {
       final categoryExpenses = filteredExpenses.where((expense) => expense.categoryId == _selectedCategoryId);
       _selectedCategoryCount = categoryExpenses.length;
       _selectedCategoryAmount = categoryExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
     } else {
-      _selectedCategoryCount = _totalExpenses;
-      _selectedCategoryAmount = _totalAmount;
+      _selectedCategoryCount = filteredExpenses.length;
+      _selectedCategoryAmount = filteredExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
     }
     
     setState(() {});

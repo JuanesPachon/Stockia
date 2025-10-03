@@ -95,7 +95,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
       if (mounted && response.success && response.data != null) {
         setState(() {
-          _providers = response.data!;
+          _providers = response.data!.where((provider) => provider.status).toList();
           _isLoadingProviders = false;
         });
       } else {

@@ -129,7 +129,7 @@ class _EditProductPageState extends State<EditProductPage> {
 
       if (mounted && response.success && response.data != null) {
         setState(() {
-          _providers = response.data!;
+          _providers = response.data!.where((provider) => provider.status).toList();
 
           if (_selectedProviderId != null) {
             final providerExists = _providers.any(
