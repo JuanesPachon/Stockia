@@ -22,7 +22,7 @@ class EditProductPage extends StatefulWidget {
   final String? providerId;
   final String stock;
   final String price;
-  final String imageUrl;
+  final String? imageUrl;
 
   const EditProductPage({
     super.key,
@@ -34,7 +34,7 @@ class EditProductPage extends StatefulWidget {
     this.providerId,
     required this.stock,
     required this.price,
-    required this.imageUrl,
+    this.imageUrl,
   });
 
   @override

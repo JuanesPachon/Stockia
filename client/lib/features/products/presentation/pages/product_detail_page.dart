@@ -6,6 +6,7 @@ import '../../../../data/services/product_service.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/default_button.dart';
 import '../../../../shared/widgets/info_display_card.dart';
+import '../../../../shared/widgets/product_image.dart';
 import 'edit_product_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -17,7 +18,7 @@ class ProductDetailPage extends StatefulWidget {
   final String? providerId;
   final String stock;
   final String price;
-  final String imageUrl;
+  final String? imageUrl;
 
   const ProductDetailPage({
     super.key,
@@ -29,7 +30,7 @@ class ProductDetailPage extends StatefulWidget {
     this.providerId,
     required this.stock,
     required this.price,
-    required this.imageUrl,
+    this.imageUrl,
   });
 
   @override
@@ -184,31 +185,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                     ),
                     child: Center(
-                      child: Container(
+                      child: ProductImage(
+                        imageUrl: widget.imageUrl,
                         width: 150,
                         height: 150,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.orange.shade300,
-                          border: Border.all(color: AppColors.mainBlue, width: 2),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.asset(
-                            widget.imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.orange.shade300,
-                                child: const Icon(
-                                  Icons.fastfood,
-                                  color: Colors.white,
-                                  size: 60,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                        borderRadius: 12,
+                        fallbackIcon: Icons.inventory,
+                        fallbackIconSize: 60,
                       ),
                     ),
                   ),

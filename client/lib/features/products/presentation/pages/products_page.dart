@@ -225,7 +225,7 @@ class _ProductsPageState extends State<ProductsPage> {
           category: _getCategoryName(product.categoryId),
           stock: product.stock.toString(),
           price: CurrencyFormatter.formatCOP(product.price),
-          imageUrl: product.imageUrl ?? 'assets/images/default_product.png',
+          imageUrl: product.imageUrl,
           onDetailsPressed: () async {
             final result = await Navigator.push(
               context,
@@ -239,8 +239,7 @@ class _ProductsPageState extends State<ProductsPage> {
                   providerId: product.providerId,
                   stock: product.stock.toString(),
                   price: product.price.toString(),
-                  imageUrl:
-                      product.imageUrl ?? 'assets/images/default_product.png',
+                  imageUrl: product.imageUrl,
                 ),
               ),
             );

@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../../core/api/api_response.dart';
@@ -22,6 +24,40 @@ class ProductService {
       return response;
     } catch (e) {
       return ApiResponse.error('Error al crear producto: $e');
+    }
+  }
+
+  Future<ApiResponse<Product>> createProductWithImage(
+    CreateProductRequest request,
+    File? imageFile,
+  ) async {
+    try {
+      
+      FormData formData = FormData.fromMap({
+        'name': request.name,
+        'stock': request.stock,
+        'price': request.price,
+        if (request.categoryId != null && request.categoryId!.isNotEmpty)
+          'categoryId': request.categoryId,
+        if (request.providerId != null && request.providerId!.isNotEmpty)
+          'providerId': request.providerId,
+        if (imageFile != null)
+          'imageUrl': await MultipartFile.fromFile(
+            imageFile.path,
+            filename: 'product_image.jpg',
+          ),
+      });
+
+      
+      final response = await _apiClient.postFormData<Product>(
+        ApiEndpoints.products,
+        formData,
+        fromJson: null,
+      );
+
+      return response;
+    } catch (e) {
+      return ApiResponse.error('Error al crear producto con imagen: $e');
     }
   }
 

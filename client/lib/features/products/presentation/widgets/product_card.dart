@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/default_button.dart';
+import '../../../../shared/widgets/product_image.dart';
 
 class ProductCard extends StatelessWidget {
   final String id;
@@ -8,7 +9,7 @@ class ProductCard extends StatelessWidget {
   final String category;
   final String stock;
   final String price;
-  final String imageUrl;
+  final String? imageUrl;
   final bool isEven;
   final VoidCallback? onDetailsPressed;
 
@@ -19,7 +20,7 @@ class ProductCard extends StatelessWidget {
     required this.category,
     required this.stock,
     required this.price,
-    required this.imageUrl,
+    this.imageUrl,
     required this.isEven,
     this.onDetailsPressed,
   });
@@ -36,31 +37,11 @@ class ProductCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
+          ProductImage(
+            imageUrl: imageUrl,
             width: 80,
             height: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.mainBlue, width: 1),
-              color: Colors.orange.shade300,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.orange.shade300,
-                    child: const Icon(
-                      Icons.fastfood,
-                      color: Colors.white,
-                      size: 40,
-                    ),
-                  );
-                },
-              ),
-            ),
+            fallbackIcon: Icons.inventory,
           ),
           
           const SizedBox(width: 16),

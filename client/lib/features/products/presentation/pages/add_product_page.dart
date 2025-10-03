@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../../../shared/widgets/custom_alert_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
@@ -38,6 +40,9 @@ class _AddProductPageState extends State<AddProductPage> {
   List<Provider> _providers = [];
   String? _selectedCategoryId;
   String? _selectedProviderId;
+
+  File? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -93,7 +98,9 @@ class _AddProductPageState extends State<AddProductPage> {
 
       if (mounted && response.success && response.data != null) {
         setState(() {
-          _providers = response.data!.where((provider) => provider.status).toList();
+          _providers = response.data!
+              .where((provider) => provider.status)
+              .toList();
           _isLoadingProviders = false;
         });
       } else {
@@ -127,19 +134,26 @@ class _AddProductPageState extends State<AddProductPage> {
         stock: int.parse(_stockController.text.trim()),
         price: double.parse(_priceController.text.trim()),
       );
-      final response = await _productService.createProduct(request);
+
+      final response = _selectedImage != null
+          ? await _productService.createProductWithImage(
+              request,
+              _selectedImage,
+            )
+          : await _productService.createProduct(request);
 
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
 
-        if (response.success && response.data != null) {
-          final product = response.data!;
+        if (response.success) {
+          final productName =
+              response.data?.name ?? _nameController.text.trim();
           showCustomDialog(
             context,
             title: 'Se ha agregado el producto:',
-            message: product.name,
+            message: productName,
             showSecondaryButton: false,
             primaryButtonText: "Aceptar",
             onPrimaryPressed: () {
@@ -153,7 +167,12 @@ class _AddProductPageState extends State<AddProductPage> {
 
           final error = response.error?.toLowerCase() ?? '';
 
-          if (error.contains('duplicate')) {
+          if (error.contains('duplicate') ||
+              error.contains('already exists') ||
+              error.contains('ya existe') ||
+              error.contains('conflict')) {
+            errorMessage = 'Ya existe un producto con ese nombre.';
+          } else if (error.contains('409')) {
             errorMessage = 'Ya existe un producto con ese nombre.';
           }
 
@@ -179,6 +198,38 @@ class _AddProductPageState extends State<AddProductPage> {
         );
       }
     }
+  }
+
+  Future<void> _selectImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 800,
+        maxHeight: 800,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al seleccionar imagen: $e'),
+            backgroundColor: Colors.red[800],
+          ),
+        );
+      }
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _selectedImage = null;
+    });
   }
 
   List<String> _getCategoryItems() {
@@ -367,7 +418,9 @@ class _AddProductPageState extends State<AddProductPage> {
                                         ),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.only(left: 12),
+                                        padding: const EdgeInsets.only(
+                                          left: 12,
+                                        ),
                                         child: Text(
                                           'Cargando...',
                                           style: TextStyle(
@@ -419,7 +472,9 @@ class _AddProductPageState extends State<AddProductPage> {
                                         ),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.only(left: 12),
+                                        padding: const EdgeInsets.only(
+                                          left: 12,
+                                        ),
                                         child: Text(
                                           'Cargando...',
                                           style: TextStyle(
@@ -475,6 +530,117 @@ class _AddProductPageState extends State<AddProductPage> {
                               }
                               return null;
                             },
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Imagen del producto:',
+                                style: TextStyle(
+                                  color: AppColors.mainBlue,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              _selectedImage != null
+                                  ? Container(
+                                      width: 200,
+                                      height: 200,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: AppColors.mainBlue,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Stack(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                            child: Image.file(
+                                              _selectedImage!,
+                                              width: 200,
+                                              height: 200,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: 8,
+                                            right: 8,
+                                            child: GestureDetector(
+                                              onTap: _removeImage,
+                                              child: Container(
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red,
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.close,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : GestureDetector(
+                                      onTap: _selectImage,
+                                      child: Container(
+                                        width: 200,
+                                        height: 200,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.mainBlue,
+                                            width: 2,
+                                            style: BorderStyle.solid,
+                                          ),
+                                          color: const Color.fromARGB(
+                                            255,
+                                            245,
+                                            245,
+                                            245,
+                                          ),
+                                        ),
+                                        child: const Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons
+                                                  .add_photo_alternate_outlined,
+                                              size: 50,
+                                              color: AppColors.mainBlue,
+                                            ),
+                                            SizedBox(height: 8),
+                                            Text(
+                                              'Seleccionar imagen',
+                                              style: TextStyle(
+                                                color: AppColors.mainBlue,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                            ],
                           ),
                         ],
                       ),

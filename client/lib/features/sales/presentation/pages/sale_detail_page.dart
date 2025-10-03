@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../shared/widgets/app_navbar.dart';
 import '../../../../shared/widgets/info_display_card.dart';
+import '../../../../shared/widgets/product_image.dart';
 import '../../../../data/models/sale/sale.dart';
 import '../../../../data/models/product/product.dart';
 import '../../../../data/services/product_service.dart';
@@ -182,46 +183,13 @@ class _SaleDetailPageState extends State<SaleDetailPage> {
                       ),
                       child: Row(
                         children: [
-                          Container(
+                          ProductImage(
+                            imageUrl: updatedProduct.imageUrl,
                             width: 60,
                             height: 60,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppColors.mainBlue,
-                                width: 1,
-                              ),
-                              color: Colors.orange.shade300,
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child:
-                                  updatedProduct.imageUrl != null &&
-                                      updatedProduct.imageUrl!.isNotEmpty
-                                  ? Image.network(
-                                      updatedProduct.imageUrl!,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Container(
-                                              color: Colors.orange.shade300,
-                                              child: const Icon(
-                                                Icons.fastfood,
-                                                color: Colors.white,
-                                                size: 30,
-                                              ),
-                                            );
-                                          },
-                                    )
-                                  : Container(
-                                      color: Colors.orange.shade300,
-                                      child: const Icon(
-                                        Icons.fastfood,
-                                        color: Colors.white,
-                                        size: 30,
-                                      ),
-                                    ),
-                            ),
+                            borderRadius: 8,
+                            fallbackIcon: Icons.inventory,
+                            fallbackIconSize: 30,
                           ),
 
                           const SizedBox(width: 16),

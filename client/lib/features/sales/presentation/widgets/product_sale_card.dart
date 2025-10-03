@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/widgets/product_image.dart';
 
 class ProductSaleCard extends StatelessWidget {
   final String name;
@@ -36,30 +37,12 @@ class ProductSaleCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
+          ProductImage(
+            imageUrl: imageUrl,
             width: 80,
             height: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.orange.shade300,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                imageUrl ?? 'assets/images/default.png',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.orange.shade300,
-                    child: const Icon(
-                      Icons.fastfood,
-                      color: Colors.white,
-                      size: 40,
-                    ),
-                  );
-                },
-              ),
-            ),
+            borderRadius: 12,
+            fallbackIcon: Icons.inventory,
           ),
           
           const SizedBox(width: 16),

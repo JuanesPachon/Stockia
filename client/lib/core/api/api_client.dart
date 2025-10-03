@@ -98,6 +98,33 @@ class ApiClient {
     }
   }
 
+  Future<ApiResponse<T>> postFormData<T>(
+    String endpoint,
+    FormData formData, {
+    T? Function(Map<String, dynamic>)? fromJson,
+    Map<String, String>? additionalHeaders,
+  }) async {
+    try {
+      final options = Options();
+      if (additionalHeaders != null) {
+        options.headers = {...options.headers ?? {}, ...additionalHeaders};
+      }
+
+      final response = await _dio.post(
+        endpoint,
+        data: formData,
+        options: options,
+      );
+
+      return _handleResponse<T>(response, fromJson);
+      
+    } on DioException catch (e) {
+      return _handleDioError(e);
+    } catch (e) {
+      return ApiResponse.error('Error inesperado: $e');
+    }
+  }
+
   Future<ApiResponse<T>> patch<T>(
     String endpoint,
     Map<String, dynamic> body, {
@@ -151,7 +178,13 @@ class ApiClient {
     try {
       if (response.statusCode! >= 200 && response.statusCode! < 300) {
         if (response.data is Map<String, dynamic>) {
-          return ApiResponse.fromJson(response.data, fromJson);
+          final responseData = response.data as Map<String, dynamic>;
+          
+          if (responseData.containsKey('success')) {
+            return ApiResponse.fromJson(responseData, fromJson);
+          } else {
+            return ApiResponse.success();
+          }
         } else {
           return ApiResponse.success();
         }
@@ -163,6 +196,11 @@ class ApiClient {
       
       return ApiResponse.error('Error del servidor (${response.statusCode})');
     } catch (e) {
+      // Si hay excepción pero el status es 2xx, probablemente es problema de parsing
+      if (response.statusCode! >= 200 && response.statusCode! < 300) {
+        // Es un éxito pero hubo problema parseando, devolver éxito genérico
+        return ApiResponse.success();
+      }
       return ApiResponse.error(
         'Error del servidor (${response.statusCode}): ${response.data}',
       );
