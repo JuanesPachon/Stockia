@@ -161,17 +161,14 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
         if (response.success && response.data != null) {
           final expense = response.data!;
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha agregado el gasto:',
-            message: expense.title,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'agregó',
+            resource: 'gasto',
+            gender: 'el',
+            resourceName: expense.title,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al crear el gasto, intente nuevamente.';
 

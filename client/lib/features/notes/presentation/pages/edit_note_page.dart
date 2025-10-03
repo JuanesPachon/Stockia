@@ -122,17 +122,14 @@ class _EditNotePageState extends State<EditNotePage> {
 
         if (response.success && response.data != null) {
           final note = response.data!;
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha editado la nota:',
-            message: note.title,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'editó',
+            resource: 'nota',
+            gender: 'la',
+            resourceName: note.title,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage =
               'Error al actualizar la nota, intente nuevamente.';

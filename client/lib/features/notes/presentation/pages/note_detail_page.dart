@@ -47,17 +47,14 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
         });
 
         if (response.success) {
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Nota eliminada exitosamente',
-            message: widget.title,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'eliminó',
+            resource: 'nota',
+            gender: 'la',
+            resourceName: widget.title,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al eliminar la nota, intente nuevamente.';
           

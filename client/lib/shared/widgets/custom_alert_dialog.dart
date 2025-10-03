@@ -96,7 +96,6 @@ class CustomAlertDialog extends StatelessWidget {
   }
 }
 
-//Helper
 Future<void> showCustomDialog(
   BuildContext context, {
   required String title,
@@ -122,5 +121,31 @@ Future<void> showCustomDialog(
         onSecondaryPressed: onSecondaryPressed,
       );
     },
+  );
+}
+
+void showSuccessSnackBar(
+  BuildContext context, {
+  required String action,
+  required String resource,
+  required String gender,
+  String? resourceName,
+}) {
+  final message = resourceName != null
+      ? 'Se $action $gender $resource "$resourceName" correctamente'
+      : 'Se $action $gender $resource correctamente';
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      backgroundColor: Colors.green[800],
+      duration: const Duration(seconds: 3),
+    ),
   );
 }

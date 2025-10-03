@@ -150,17 +150,14 @@ class _AddProductPageState extends State<AddProductPage> {
         if (response.success) {
           final productName =
               response.data?.name ?? _nameController.text.trim();
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha agregado el producto:',
-            message: productName,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'agregó',
+            resource: 'producto',
+            gender: 'el',
+            resourceName: productName,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage =
               'Error al crear el producto, intente nuevamente.';

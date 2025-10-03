@@ -130,10 +130,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
             ),
             SizedBox(height: 8),
             Text(
-              'Agrega tu primera categoría usando el botón de arriba',
+              'Agrega una categoría o cambia el filtro',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.grey,
+                color: AppColors.mainBlue,
                 fontSize: 14,
               ),
             ),

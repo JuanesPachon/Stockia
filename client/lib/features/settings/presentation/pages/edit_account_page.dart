@@ -229,16 +229,13 @@ class _EditAccountPageState extends State<EditAccountPage> {
         });
 
         if (response.success) {
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha editado tu perfil exitosamente',
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'editó',
+            resource: 'perfil',
+            gender: 'el',
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al actualizar el perfil, intente nuevamente.';
 

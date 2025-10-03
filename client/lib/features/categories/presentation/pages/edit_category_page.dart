@@ -73,17 +73,14 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
 
         if (response.success && response.data != null) {
           final category = response.data!;
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha editado la categoría:',
-            message: category.name,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context); 
-              Navigator.pop(context, true);
-            },
+            action: 'editó',
+            resource: 'categoría',
+            gender: 'la',
+            resourceName: category.name,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al actualizar la categoría, intente nuevamente.';
           

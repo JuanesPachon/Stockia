@@ -56,17 +56,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         });
 
         if (response.success) {
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Producto eliminado exitosamente',
-            message: widget.name,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'eliminó',
+            resource: 'producto',
+            gender: 'el',
+            resourceName: widget.name,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al eliminar el producto, intente nuevamente.';
           

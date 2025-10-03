@@ -53,17 +53,14 @@ class _ExpenseDetailPageState extends State<ExpenseDetailPage> {
         });
 
         if (response.success) {
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Gasto eliminado exitosamente',
-            message: widget.title,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'eliminó',
+            resource: 'gasto',
+            gender: 'el',
+            resourceName: widget.title,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al eliminar el gasto, intente nuevamente.';
           

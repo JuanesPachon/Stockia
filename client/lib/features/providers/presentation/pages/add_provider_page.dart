@@ -104,17 +104,14 @@ class _AddProviderPageState extends State<AddProviderPage> {
 
         if (response.success && response.data != null) {
           final provider = response.data!;
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha agregado el proveedor:',
-            message: provider.name,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'agregó',
+            resource: 'proveedor',
+            gender: 'el',
+            resourceName: provider.name,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage =
               'Error al crear el proveedor, intente nuevamente.';

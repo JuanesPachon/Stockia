@@ -51,17 +51,14 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
         });
 
         if (response.success) {
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Proveedor eliminado exitosamente',
-            message: widget.name,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'eliminó',
+            resource: 'proveedor',
+            gender: 'el',
+            resourceName: widget.name,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al eliminar el proveedor, intente nuevamente.';
           

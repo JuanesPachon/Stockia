@@ -136,17 +136,14 @@ class _EditProviderPageState extends State<EditProviderPage> {
 
         if (response.success && response.data != null) {
           final provider = response.data!;
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha editado el proveedor:',
-            message: provider.name,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'editó',
+            resource: 'proveedor',
+            gender: 'el',
+            resourceName: provider.name,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage =
               'Error al actualizar el proveedor, intente nuevamente.';

@@ -98,17 +98,14 @@ class _AddNotePageState extends State<AddNotePage> {
 
         if (response.success && response.data != null) {
           final note = response.data!;
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha agregado la nota:',
-            message: note.title,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'agregó',
+            resource: 'nota',
+            gender: 'la',
+            resourceName: note.title,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al crear la nota, intente nuevamente.';
 

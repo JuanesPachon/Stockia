@@ -201,17 +201,14 @@ class _EditExpensePageState extends State<EditExpensePage> {
 
         if (response.success && response.data != null) {
           final expense = response.data!;
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha editado el gasto:',
-            message: expense.title,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'editó',
+            resource: 'gasto',
+            gender: 'el',
+            resourceName: expense.title,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage =
               'Error al actualizar el gasto, intente nuevamente.';

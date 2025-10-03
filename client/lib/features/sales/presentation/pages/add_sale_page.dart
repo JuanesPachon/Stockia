@@ -206,17 +206,14 @@ class _AddSalePageState extends State<AddSalePage> {
 
           _loadProducts();
 
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha agregado la venta:',
-            message: 'Total: ${CurrencyFormatter.formatCOP(sale.total)}',
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'agregó',
+            resource: 'venta',
+            gender: 'la',
+            resourceName: 'Total: ${CurrencyFormatter.formatCOP(sale.total)}',
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al crear la venta, intente nuevamente.';
 

@@ -85,17 +85,14 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
         });
 
         if (response.success) {
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Categoría eliminada exitosamente',
-            message: _category!.name,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'eliminó',
+            resource: 'categoría',
+            gender: 'la',
+            resourceName: _category!.name,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al eliminar la categoría, intente nuevamente.';
           

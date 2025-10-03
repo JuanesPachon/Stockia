@@ -233,17 +233,14 @@ class _EditProductPageState extends State<EditProductPage> {
         if (response.success) {
           final productName =
               response.data?.name ?? _nameController.text.trim();
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha editado el producto:',
-            message: productName,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'editó',
+            resource: 'producto',
+            gender: 'el',
+            resourceName: productName,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage =
               'Error al actualizar el producto, intente nuevamente.';

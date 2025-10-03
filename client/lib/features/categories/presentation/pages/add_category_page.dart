@@ -57,17 +57,14 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
 
         if (response.success && response.data != null) {
           final category = response.data!;
-          showCustomDialog(
+          showSuccessSnackBar(
             context,
-            title: 'Se ha agregado la categoría:',
-            message: category.name,
-            showSecondaryButton: false,
-            primaryButtonText: "Aceptar",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+            action: 'agregó',
+            resource: 'categoría',
+            gender: 'la',
+            resourceName: category.name,
           );
+          Navigator.pop(context, true);
         } else {
           String errorMessage = 'Error al crear la categoría, intente nuevamente.';
           
