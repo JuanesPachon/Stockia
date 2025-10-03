@@ -33,8 +33,7 @@ const getProviders = async (userId: string, order: string = 'desc', categoryId?:
             .sort(sortObject)
             .populate({
                 path: 'categoryId',
-                select: 'name description',
-                match: { _id: { $ne: null } }
+                select: 'name description'
             });
 
         return {
@@ -70,8 +69,7 @@ const getProviderById = async (providerId: string, userId: string): Promise<IGet
         })
         .populate({
             path: 'categoryId',
-            select: 'name description',
-            match: { _id: { $ne: null } }
+            select: 'name description'
         });
 
         if (!provider) {

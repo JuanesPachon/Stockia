@@ -45,7 +45,7 @@ const expenseSchema = new mongoose.Schema<IExpense>({
 });
 
 expenseSchema.index({ userId: 1, createdAt: -1 });
-expenseSchema.index({ title: 1, userId: 1 }, { unique: true });
+expenseSchema.index({ title: 1, userId: 1 }, { unique: true, partialFilterExpression: { deletedAt: null } });
 
 const Expense = mongoose.model("Expense", expenseSchema);
 

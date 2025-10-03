@@ -141,10 +141,27 @@ const updateCategory = async (categoryId: string, categoryData: ICategory, userI
             };
         }
 
+        if (categoryData.name) {
+            const existingCategory = await Category.exists({
+                name: categoryData.name,
+                userId: userId,
+                _id: { $ne: categoryId },
+                deletedAt: null,
+            });
+
+            if (existingCategory) {
+                return {
+                    success: false,
+                    error: 'duplicate',
+                    message: 'Category with this name already exists',
+                };
+            }
+        }
+
         const updatedCategory = await Category.findOneAndUpdate(
-            { _id: categoryId, userId: userId },
+            { _id: categoryId, userId: userId, deletedAt: null },
             categoryData,
-            { new: true } // Return the updated document
+            { new: true }
         );
 
         if (!updatedCategory) {
@@ -198,6 +215,7 @@ const deleteCategory = async (categoryId: string, userId: string): Promise<IDele
             {
                 _id: categoryId,
                 userId: userId,
+                deletedAt: null,
             },
             {
                 deletedAt: new Date(),

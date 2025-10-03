@@ -86,13 +86,11 @@ const getProducts = async (userId: string, order: string = 'desc', categoryId?: 
             .sort(sortObject)
             .populate({
                 path: 'categoryId',
-                select: 'name',
-                match: { _id: { $ne: null } }
+                select: 'name'
             })
             .populate({
                 path: 'providerId', 
-                select: 'name',
-                match: { _id: { $ne: null } }
+                select: 'name'
             });
 
         return {
@@ -128,13 +126,11 @@ const getProductById = async (productId: string, userId: string): Promise<IGetRe
         })
         .populate({
             path: 'categoryId',
-            select: 'name description',
-            match: { _id: { $ne: null } }
+            select: 'name description'
         })
         .populate({
             path: 'providerId',
-            select: 'name',
-            match: { _id: { $ne: null } }
+            select: 'name'
         });
 
         if (!product) {
@@ -173,8 +169,25 @@ const updateProduct = async (productId: string, productData: IProduct, userId: s
             };
         }
 
+        if (productData.name) {
+            const existingProduct = await Product.exists({
+                name: productData.name,
+                userId: userId,
+                _id: { $ne: productId },
+                deletedAt: null,
+            });
+
+            if (existingProduct) {
+                return {
+                    success: false,
+                    error: 'duplicate',
+                    message: 'Product with this name already exists',
+                };
+            }
+        }
+
         const updatedProduct = await Product.findOneAndUpdate(
-            { _id: productId, userId: userId },
+            { _id: productId, userId: userId, deletedAt: null },
             productData,
             { new: true }
         );
@@ -232,6 +245,7 @@ const deleteProduct = async (productId: string, userId: string): Promise<IDelete
             {
                 _id: productId,
                 userId: userId,
+                deletedAt: null,
             },
             {
                 deletedAt: new Date(),

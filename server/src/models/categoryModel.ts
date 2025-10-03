@@ -30,7 +30,7 @@ const categorySchema = new mongoose.Schema<ICategory>({
 
 // Index for optimizing queries
 categorySchema.index({ userId: 1, createdAt: -1 });
-categorySchema.index({ name: 1, userId: 1 }, { unique: true });
+categorySchema.index({ name: 1, userId: 1 }, { unique: true, partialFilterExpression: { deletedAt: null } });
 
 const Category = mongoose.model("Category", categorySchema);
 

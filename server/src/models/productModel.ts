@@ -50,7 +50,7 @@ const productSchema = new mongoose.Schema<IProduct>({
 });
 
 // Index for optimizing queries
-productSchema.index({ categoryId: 1, name: 1 }, { unique: true });
+productSchema.index({ name: 1, userId: 1 }, { unique: true, partialFilterExpression: { deletedAt: null } });
 
 const Product = mongoose.model('Product', productSchema);
 

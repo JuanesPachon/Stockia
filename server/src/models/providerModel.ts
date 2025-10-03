@@ -44,7 +44,7 @@ const providerSchema = new mongoose.Schema<IProvider>({
 
 // Index for optimizing queries
 providerSchema.index({ userId: 1, createdAt: -1 });
-providerSchema.index({ name: 1, userId: 1 }, { unique: true });
+providerSchema.index({ name: 1, userId: 1 }, { unique: true, partialFilterExpression: { deletedAt: null } });
 
 const Provider = mongoose.model('Provider', providerSchema);
 

@@ -33,8 +33,7 @@ const getNotes = async (userId: string, order: string = 'desc', categoryId?: str
             .sort(sortObject)
             .populate({
                 path: 'categoryId',
-                select: 'name description',
-                match: { _id: { $ne: null } }
+                select: 'name description'
             });
 
         return {
@@ -70,8 +69,7 @@ const getNoteById = async (noteId: string, userId: string): Promise<IGetResult> 
         })
         .populate({
             path: 'categoryId',
-            select: 'name description',
-            match: { _id: { $ne: null } }
+            select: 'name description'
         });
 
         if (!note) {

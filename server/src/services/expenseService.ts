@@ -34,13 +34,11 @@ const getExpenses = async (userId: string, order: string = 'desc', categoryId?: 
             .sort(sortObject)
             .populate({
                 path: 'categoryId',
-                select: 'name description',
-                match: { _id: { $ne: null } }
+                select: 'name description'
             })
             .populate({
                 path: 'providerId',
-                select: 'name contact',
-                match: { _id: { $ne: null } }
+                select: 'name contact'
             });
 
         return {
@@ -76,13 +74,11 @@ const getExpenseById = async (expenseId: string, userId: string): Promise<IGetRe
         })
         .populate({
             path: 'categoryId',
-            select: 'name description',
-            match: { _id: { $ne: null } }
+            select: 'name description'
         })
         .populate({
             path: 'providerId',
-            select: 'name contact',
-            match: { _id: { $ne: null } }
+            select: 'name contact'
         });
 
         if (!expense) {
@@ -238,6 +234,23 @@ const updateExpense = async (expenseId: string, expenseData: Partial<IExpense>, 
             }
         }
 
+        if (expenseData.title) {
+            const existingExpense = await Expense.exists({
+                title: expenseData.title,
+                userId: userId,
+                _id: { $ne: expenseId },
+                deletedAt: null,
+            });
+
+            if (existingExpense) {
+                return {
+                    success: false,
+                    error: 'duplicate',
+                    message: 'Expense with this title already exists',
+                };
+            }
+        }
+
         const updatedExpense = await Expense.findOneAndUpdate(
             { _id: expenseId, userId: userId, deletedAt: null },
             expenseData,
@@ -298,6 +311,7 @@ const deleteExpense = async (expenseId: string, userId: string): Promise<IDelete
             {
                 _id: expenseId,
                 userId: userId,
+                deletedAt: null,
             },
             {
                 deletedAt: new Date(),

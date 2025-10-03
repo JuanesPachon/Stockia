@@ -34,7 +34,7 @@ const noteSchema = new mongoose.Schema<INote>({
 });
 
 noteSchema.index({ userId: 1, createdAt: -1 });
-noteSchema.index({ title: 1, userId: 1 }, { unique: true });
+noteSchema.index({ title: 1, userId: 1 }, { unique: true, partialFilterExpression: { deletedAt: null } });
 
 const Note = mongoose.model("Note", noteSchema);
 
