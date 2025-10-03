@@ -20,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   final AuthService _authService = AuthService();
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -132,7 +133,19 @@ class _LoginPageState extends State<LoginPage> {
                         DefaultTextField(
                           label: 'Contraseña:',
                           controller: _passwordController,
-                          obscureText: true,
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            color: AppColors.mainBlue,
+                            size: 24,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                            _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                          ),
                         ),
 
                         SizedBox(height: screenHeight * 0.01),

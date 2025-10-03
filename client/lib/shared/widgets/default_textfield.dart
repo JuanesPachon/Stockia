@@ -8,6 +8,7 @@ class DefaultTextField extends StatelessWidget {
   final TextEditingController? controller;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
+  final Widget? suffixIcon;
 
   const DefaultTextField({
     super.key,
@@ -17,6 +18,7 @@ class DefaultTextField extends StatelessWidget {
     this.controller,
     this.keyboardType,
     this.validator,
+    this.suffixIcon,
   });
 
   @override
@@ -42,6 +44,8 @@ class DefaultTextField extends StatelessWidget {
             validator: validator,
             decoration: InputDecoration(
               hintText: hintText,
+              suffixIcon: suffixIcon,
+              suffixIconConstraints: BoxConstraints(minWidth: 65, maxHeight: 40),
               filled: true,
               fillColor: const Color.fromARGB(255, 205, 187, 152),
               isDense: true,
