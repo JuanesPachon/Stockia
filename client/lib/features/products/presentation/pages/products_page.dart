@@ -124,8 +124,12 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
-  String _getCategoryName(String? categoryId) {
+  String _getCategoryName(String? categoryId, [String? categoryName]) {
     if (categoryId == null || categoryId.isEmpty) return 'Sin categoría';
+
+    if (categoryName != null && categoryName.isNotEmpty) {
+      return categoryName;
+    }
 
     final category = _categories.firstWhere(
       (cat) => cat.id == categoryId,
@@ -139,8 +143,12 @@ class _ProductsPageState extends State<ProductsPage> {
     return category.name;
   }
 
-  String _getProviderName(String? providerId) {
+  String _getProviderName(String? providerId, [String? providerName]) {
     if (providerId == null || providerId.isEmpty) return 'Sin proveedor';
+
+    if (providerName != null && providerName.isNotEmpty) {
+      return providerName;
+    }
 
     final provider = _providers.firstWhere(
       (prov) => prov.id == providerId,
@@ -222,7 +230,7 @@ class _ProductsPageState extends State<ProductsPage> {
         return ProductCard(
           id: product.id,
           name: product.name,
-          category: _getCategoryName(product.categoryId),
+          category: _getCategoryName(product.categoryId, product.categoryName),
           stock: product.stock.toString(),
           price: CurrencyFormatter.formatCOP(product.price),
           imageUrl: product.imageUrl,
@@ -233,9 +241,9 @@ class _ProductsPageState extends State<ProductsPage> {
                 builder: (context) => ProductDetailPage(
                   id: product.id,
                   name: product.name,
-                  category: _getCategoryName(product.categoryId),
+                  category: _getCategoryName(product.categoryId, product.categoryName),
                   categoryId: product.categoryId,
-                  provider: _getProviderName(product.providerId),
+                  provider: _getProviderName(product.providerId, product.providerName),
                   providerId: product.providerId,
                   stock: product.stock.toString(),
                   price: product.price.toString(),

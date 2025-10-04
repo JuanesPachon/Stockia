@@ -132,8 +132,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
     }
   }
 
-  String _getCategoryName(String? categoryId) {
+  String _getCategoryName(String? categoryId, [String? categoryName]) {
     if (categoryId == null || categoryId.isEmpty) return 'Sin categoría';
+
+    if (categoryName != null && categoryName.isNotEmpty) {
+      return categoryName;
+    }
 
     final category = _categories.firstWhere(
       (cat) => cat.id == categoryId,
@@ -147,8 +151,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
     return category.name;
   }
 
-  String _getProviderName(String? providerId) {
+  String _getProviderName(String? providerId, [String? providerName]) {
     if (providerId == null || providerId.isEmpty) return 'Sin proveedor';
+
+    if (providerName != null && providerName.isNotEmpty) {
+      return providerName;
+    }
 
     final provider = _providers.firstWhere(
       (prov) => prov.id == providerId,
@@ -233,7 +241,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
         return ExpenseCard(
           id: expense.id,
           title: expense.title,
-          category: _getCategoryName(expense.categoryId),
+          category: _getCategoryName(expense.categoryId, expense.categoryName),
           description: expense.description.length > 50
               ? '${expense.description.substring(0, 50)}...'
               : expense.description,
@@ -246,11 +254,11 @@ class _ExpensesPageState extends State<ExpensesPage> {
                 builder: (context) => ExpenseDetailPage(
                   id: expense.id,
                   title: expense.title,
-                  category: _getCategoryName(expense.categoryId),
+                  category: _getCategoryName(expense.categoryId, expense.categoryName),
                   categoryId: expense.categoryId,
                   amount: CurrencyFormatter.formatCOP(expense.amount),
                   providerId: expense.providerId,
-                  provider: _getProviderName(expense.providerId),
+                  provider: _getProviderName(expense.providerId, expense.providerName),
                   description: expense.description,
                 ),
               ),

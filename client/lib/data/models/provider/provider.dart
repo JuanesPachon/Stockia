@@ -3,6 +3,7 @@ class Provider {
   final String userId;
   final String name;
   final String? categoryId;
+  final String? categoryName;
   final String? contact;
   final String? description;
   final bool status;
@@ -14,6 +15,7 @@ class Provider {
     required this.userId,
     required this.name,
     this.categoryId,
+    this.categoryName,
     this.contact,
     this.description,
     required this.status,
@@ -23,13 +25,17 @@ class Provider {
 
   factory Provider.fromJson(Map<String, dynamic> json) {
     String? categoryId;
+    String? categoryName;
     if (json['categoryId'] is String) {
       categoryId = json['categoryId'];
+      categoryName = null;
     } else if (json['categoryId'] is Map<String, dynamic>) {
       final categoryMap = json['categoryId'] as Map<String, dynamic>;
       categoryId = categoryMap['_id'] ?? categoryMap['id'];
+      categoryName = categoryMap['name'];
     } else {
       categoryId = null;
+      categoryName = null;
     }
     
     return Provider(
@@ -37,6 +43,7 @@ class Provider {
       userId: json['userId'] ?? '',
       name: json['name'] ?? '',
       categoryId: categoryId,
+      categoryName: categoryName,
       contact: json['contact'],
       description: json['description'],
       status: json['status'] ?? true,

@@ -19,6 +19,7 @@ const productSchema = new mongoose.Schema<IProduct>({
     },
     providerId: {
         type: mongoose.Schema.Types.ObjectId,
+        ref: 'Provider',
         required: false,
         default: null,
     },

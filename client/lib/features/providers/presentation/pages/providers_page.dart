@@ -108,8 +108,12 @@ class _ProvidersPageState extends State<ProvidersPage> {
     }
   }
 
-  String _getCategoryName(String? categoryId) {
+  String _getCategoryName(String? categoryId, [String? categoryName]) {
     if (categoryId == null || categoryId.isEmpty) return 'Sin categoría';
+
+    if (categoryName != null && categoryName.isNotEmpty) {
+      return categoryName;
+    }
 
     final category = _categories.firstWhere(
       (cat) => cat.id == categoryId,
@@ -191,7 +195,7 @@ class _ProvidersPageState extends State<ProvidersPage> {
           id: provider.id,
           name: provider.name,
           contact: provider.contact ?? 'Sin contacto',
-          category: _getCategoryName(provider.categoryId),
+          category: _getCategoryName(provider.categoryId, provider.categoryName),
           status: provider.status ? 'Activo' : 'Inactivo',
           onDetailsPressed: () async {
             final result = await Navigator.push(
@@ -201,7 +205,7 @@ class _ProvidersPageState extends State<ProvidersPage> {
                   id: provider.id,
                   name: provider.name,
                   contact: provider.contact ?? 'Sin contacto',
-                  category: _getCategoryName(provider.categoryId),
+                  category: _getCategoryName(provider.categoryId, provider.categoryName),
                   categoryId: provider.categoryId,
                   status: provider.status ? 'Activo' : 'Inactivo',
                   description: provider.description ?? 'Sin descripción',
