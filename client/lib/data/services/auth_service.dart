@@ -52,6 +52,19 @@ class AuthService {
     }
   }
 
+  Future<bool> hasActiveSession() async {
+    return await _apiClient.hasActiveSession();
+  }
+
+  Future<ApiResponse<String>> logout() async {
+    try {
+      await _apiClient.clearSession();
+      return ApiResponse.success(message: 'Sesión cerrada exitosamente');
+    } catch (e) {
+      return ApiResponse.error('Error al cerrar sesión: $e');
+    }
+  }
+
   Future<ApiResponse<User>> updateUser({
     String? email,
     String? name,

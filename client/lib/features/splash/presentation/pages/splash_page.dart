@@ -23,12 +23,21 @@ class _SplashPageState extends State<SplashPage> {
     await Future.delayed(const Duration(seconds: 2));
 
     try {
-      final response = await _authService.getCurrentUser();
+      final hasSession = await _authService.hasActiveSession();
       
-      if (mounted) {
-        if (response.success) {
-          Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
-        } else {
+      if (hasSession) {
+        final response = await _authService.getCurrentUser();
+        
+        if (mounted) {
+          if (response.success) {
+            Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+          } else {
+            await _authService.logout();
+            Navigator.pushReplacementNamed(context, AppRoutes.welcome);
+          }
+        }
+      } else {
+        if (mounted) {
           Navigator.pushReplacementNamed(context, AppRoutes.welcome);
         }
       }

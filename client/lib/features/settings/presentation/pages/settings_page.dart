@@ -60,11 +60,20 @@ class _SettingsPageState extends State<SettingsPage> {
     return businessName;
   }
 
-  void _logout() {
-    setState(() {
-      _user = null;
-    });
-    Navigator.pushReplacementNamed(context, AppRoutes.welcome);
+  Future<void> _logout() async {
+    try {
+      await _authService.logout();
+      setState(() {
+        _user = null;
+      });
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.welcome);
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.welcome);
+      }
+    }
   }
 
   @override
