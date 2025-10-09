@@ -22,6 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
   
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _autoValidate = false;
 
   @override
   void dispose() {
@@ -32,6 +33,10 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _handleRegister() async {
+    setState(() {
+      _autoValidate = true;
+    });
+    
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -110,6 +115,7 @@ class _RegisterPageState extends State<RegisterPage> {
           child: IntrinsicHeight(
             child: Form(
               key: _formKey,
+              autovalidateMode: _autoValidate ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
               child: Column(
                 children: [
                   SizedBox(height: screenHeight * 0.1),
