@@ -89,38 +89,4 @@ class AuthService {
     }
   }
 
-  static bool isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
-
-  static bool isValidPassword(String password) {
-    final regex = RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#\$&*~_\-\.\,\;\:\?\^]).{8,}$');
-    return regex.hasMatch(password);
-  }
-
-  static Map<String, String?> validateRegisterData({
-    required String email,
-    required String password,
-    required String name,
-  }) {
-    Map<String, String?> errors = {};
-
-    if (email.isEmpty) {
-      errors['email'] = 'El email es requerido';
-    } else if (!isValidEmail(email)) {
-      errors['email'] = 'Email inválido';
-    }
-
-    if (password.isEmpty) {
-      errors['password'] = 'La contraseña es requerida';
-    } else if (!isValidPassword(password)) {
-      errors['password'] = 'La contraseña debe tener al menos 6 caracteres';
-    }
-
-    if (name.isEmpty) {
-      errors['name'] = 'El nombre es requerido';
-    }
-
-    return errors;
-  }
 }

@@ -383,9 +383,8 @@ class ApiClient {
 
       return ApiResponse.error('Error del servidor (${response.statusCode})');
     } catch (e) {
-      // Si hay excepción pero el status es 2xx, probablemente es problema de parsing
+      //probably parsing error handling
       if (response.statusCode! >= 200 && response.statusCode! < 300) {
-        // Es un éxito pero hubo problema parseando, devolver éxito genérico
         return ApiResponse.success();
       }
       return ApiResponse.error(
@@ -407,7 +406,6 @@ class ApiClient {
         final data = e.response?.data;
 
         if (data is Map<String, dynamic>) {
-          // Crear ApiResponse usando fromJson para capturar todos los campos
           return ApiResponse.fromJson(data, null);
         }
 

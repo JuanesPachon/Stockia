@@ -185,7 +185,6 @@ class _VentasTabState extends State<VentasTab> {
       _selectedProductRevenue = filteredSalesProduct.fold(0.0, (sum, sale) => sum + sale.total);
     }
     
-    // Detalle por categorías - CON filtro de tiempo  
     final filteredSalesCategory = _filterSalesByTimeRange(_sales, _selectedTimeRangeCategory);
     
     if (_selectedCategoryId != null) {
