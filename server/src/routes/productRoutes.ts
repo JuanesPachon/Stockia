@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createProductController, deleteProductController, getProductController, getProductsController, updateProductController } from '../controllers/productControllers.js';
+import { createProductController, deleteProductController, getProductController, getProductsController, updateProductController, searchProductsController } from '../controllers/productControllers.js';
 import { upload } from '../config/multer.config.js';
 import { handleMulterError, uploadToSupabase, deleteOldImage } from '../middlewares/multerMiddlewares.js';
 import { editProductValidations, productValidations } from '../middlewares/validateProduct.js';
@@ -11,6 +11,7 @@ const router = Router();
 router.use(verifyToken);
 
 router.get('/products', getProductsController);
+router.get('/products/search', searchProductsController);
 router.get('/products/:id', getProductController);
 router.post('/products', upload.single('imageUrl'), handleMulterError, uploadToSupabase, productValidations, errorsIsEmpty, createProductController);
 router.patch('/products/:id', upload.single('imageUrl'), handleMulterError, deleteOldImage, uploadToSupabase, editProductValidations, errorsIsEmpty, updateProductController);

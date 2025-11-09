@@ -126,10 +126,41 @@ const deleteProductController = async (req: Request, res: Response) => {
     }
 };
 
+const searchProductsController = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.sub;
+        const searchQuery = req.query.name;
+        
+        if (!userId) {
+            return errorHandler.handleAuthError(res);
+        }
+
+        if (!searchQuery || typeof searchQuery !== 'string') {
+            return res.status(400).json({
+                success: false,
+                message: 'Search term is required',
+            });
+        }
+
+        const response = await productService.searchProductsByName(userId, searchQuery);
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else if (response.error === 'not_found') {
+            return errorHandler.handleNotFoundError(res, 'User not found');
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (error) {
+        return errorHandler.handleServerError(res);
+    }
+};
+
 export { 
     getProductsController,
     getProductController,
     createProductController,
     updateProductController,
-    deleteProductController
+    deleteProductController,
+    searchProductsController
 };

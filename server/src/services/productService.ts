@@ -274,10 +274,47 @@ const deleteProduct = async (productId: string, userId: string): Promise<IDelete
     }
 };
 
+const searchProductsByName = async (userId: string, searchTerm: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'User not found',
+            };
+        }
+
+        const products = await Product.find({
+            userId: userId,
+            deletedAt: null,
+            name: { $regex: searchTerm, $options: 'i' }
+        })
+        .populate('categoryId', 'name')
+        .populate('providerId', 'name')
+        .sort({ createdAt: -1 });
+
+        return {
+            success: true,
+            message: `Found ${products.length} product(s)`,
+            data: products,
+        };
+    } catch (error) {
+        console.error('Error searching products:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while searching products',
+        };
+    }
+};
+
 export default {
     getProducts,
     getProductById,
     createProduct,
     updateProduct,
     deleteProduct,
+    searchProductsByName,
 }

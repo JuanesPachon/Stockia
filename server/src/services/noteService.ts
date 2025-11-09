@@ -287,10 +287,46 @@ const deleteNote = async (noteId: string, userId: string): Promise<IDeleteResult
     }
 };
 
+const searchNotesByTitle = async (userId: string, searchTerm: string): Promise<IGetResult> => {
+    try {
+        const existingUser = await User.exists({ _id: userId });
+
+        if (!existingUser) {
+            return {
+                success: false,
+                error: 'not_found',
+                message: 'User not found',
+            };
+        }
+
+        const notes = await Note.find({
+            userId: userId,
+            deletedAt: null,
+            title: { $regex: searchTerm, $options: 'i' }
+        })
+        .populate('categoryId', 'name')
+        .sort({ createdAt: -1 });
+
+        return {
+            success: true,
+            message: `Found ${notes.length} note(s)`,
+            data: notes,
+        };
+    } catch (error) {
+        console.error('Error searching notes:', error);
+        return {
+            success: false,
+            error: 'server',
+            message: 'An error occurred while searching notes',
+        };
+    }
+};
+
 export default {
     getNotes,
     getNoteById,
     createNote,
     updateNote,
     deleteNote,
+    searchNotesByTitle,
 };

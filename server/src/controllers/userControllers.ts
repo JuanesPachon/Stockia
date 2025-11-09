@@ -30,8 +30,8 @@ const loginController = async (req: Request, res: Response) => {
             return res
                 .cookie('access_token', response.token, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'lax',
+                    secure: true,
+                    sameSite: 'none',
                     maxAge: 14 * 24 * 60 * 60 * 1000,
                 })
                 .status(200)

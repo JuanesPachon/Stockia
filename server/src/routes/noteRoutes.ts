@@ -4,7 +4,8 @@ import {
     getNoteController, 
     createNoteController, 
     updateNoteController, 
-    deleteNoteController 
+    deleteNoteController,
+    searchNotesController
 } from "../controllers/noteControllers.js";
 import verifyToken from "../middlewares/validateToken.js";
 import { noteValidations, editNoteValidations } from "../middlewares/validateNote.js";
@@ -15,6 +16,7 @@ const router = Router();
 router.use(verifyToken);
 
 router.get("/notes", getNotesController);
+router.get("/notes/search", searchNotesController);
 router.get("/notes/:id", getNoteController);
 router.post("/notes", noteValidations, errorsIsEmpty, createNoteController);
 router.patch("/notes/:id", editNoteValidations, errorsIsEmpty, updateNoteController);
